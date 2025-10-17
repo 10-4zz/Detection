@@ -1,6 +1,8 @@
 """
 Writen by: ian
 """
+from torch import Tensor
+
 from models.architectures.base_architecture import BaseArchitecture
 from models.backbones.base_backbone import BaseBackbone
 from models.necks.base_neck import BaseNeck
@@ -16,7 +18,7 @@ class YOLO(BaseArchitecture):
             backbone: BaseBackbone = None,
             neck: BaseNeck = None,
             head: BaseHead = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.backbone = backbone
@@ -35,16 +37,18 @@ class YOLO(BaseArchitecture):
 
         self.info()
 
-    def backbone_forward(self, x):
+    def backbone_forward(self, x) -> Tensor:
         self.backbone(x)
 
-    def forward(self, x):
+        return x
+
+    def forward(self, x) -> Tensor:
         pass
 
-    def show_model_info(self):
+    def show_model_info(self) -> None:
         pass
 
-    def info(self):
+    def info(self) -> None:
         logger.info("========================================================")
         logger.info("Loading custom model...")
         logger.info(f"Load Backbone: {self.backbone.__class__.__name__}")

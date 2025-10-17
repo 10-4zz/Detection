@@ -1,9 +1,10 @@
 """
 Writen by ian
 """
-from typing import Dict, Optional, Union, Tuple, List
+from typing import Optional, Union, Tuple, List
 
 import torch.nn as nn
+from torch import Tensor
 
 from utils.logger import logger
 
@@ -12,7 +13,7 @@ class BaseArchitecture(nn.Module):
     def __init__(
             self,
             input_size: Optional[Union[int, Tuple[int], List[list]]] = None,
-    ):
+    ) -> None:
         super(BaseArchitecture, self).__init__()
 
         self.input_size = input_size
@@ -21,7 +22,7 @@ class BaseArchitecture(nn.Module):
     def forward(self, *args, **kwargs):
         raise NotImplementedError("Forward method not implemented.")
 
-    def show_model_info(self):
+    def show_model_info(self) -> None:
         """
         This method will provide the information about the architecture or model. for example, parameters
         FLOPs and so on.
@@ -31,7 +32,7 @@ class BaseArchitecture(nn.Module):
             "please implement the method get_model_info in your class."
         )
 
-    def info(self):
+    def info(self) -> None:
         """
         This method is used to show some information which need be shown in terminal.
         :return:

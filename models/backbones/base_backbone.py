@@ -11,7 +11,7 @@ from utils.logger import logger
 
 
 class BaseBackbone(nn.Module):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.layer_out: List[Tensor] = []

@@ -11,4 +11,5 @@ class BaseNeck(nn.Module):
     def forward(self, x):
         pass
 
-
+    def get_feat_index(self):
+        raise NotImplementedError("Please Implement this method")

@@ -29,13 +29,30 @@ class YOLO(BaseArchitecture):
                                "If you do not want to use yolov5, please set the version or provide your own "
                                "model base on yolo architecture.")
             else:
-                logger.info("Loading custom model...")
-                logger.info(f"Load Backbone: {self.backbone.__class__.__name__}")
-                if self.neck is not None:
-                    logger.info(f"Load Neck: {self.neck.__class__.__name__}")
-                logger.info(f"Load Head: {self.head.__class__.__name__}")
+                pass
         else:
             pass
+
+        self.info()
+
+    def backbone_forward(self, x):
+        self.backbone(x)
+
+    def forward(self, x):
+        pass
+
+    def show_model_info(self):
+        pass
+
+    def info(self):
+        logger.info("========================================================")
+        logger.info("Loading custom model...")
+        logger.info(f"Load Backbone: {self.backbone.__class__.__name__}")
+        if self.neck is not None:
+            logger.info(f"Load Neck: {self.neck.__class__.__name__}")
+        logger.info(f"Load Head: {self.head.__class__.__name__}")
+        logger.info("========================================================")
+
 
 
 if __name__ == "__main__":

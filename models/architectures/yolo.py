@@ -9,8 +9,10 @@ from models.necks.base_neck import BaseNeck
 from models.heads.base_head import BaseHead
 
 from utils.logger import logger
+from models.architectures import ARCHITECTURES_REGISTRY
 
 
+@ARCHITECTURES_REGISTRY.register(component_name='yolo', another_name='yolo_architecture')
 class YOLO(BaseArchitecture):
     def __init__(
             self,

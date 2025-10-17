@@ -5,6 +5,10 @@
 - [Setup](#setup)
 
 ## Introduction
+This project uses PyTorch to implement current mainstream and classic computer vision detection models, including but not limited to the following:
+- Yolo series
+
+In addition, some small tools for dataset conversion are implemented.
 
 ## Setup
 

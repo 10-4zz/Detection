@@ -1,5 +1,3 @@
-[English](./README-Eng.md) | [简体中文](./README-zh-CN.md)
-
 # A project for detection models in computer vision by PyTorch.
 
 A brief introduction to my project.

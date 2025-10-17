@@ -32,3 +32,4 @@ class BaseArchitecture(nn.Module):
         )
 
 
+

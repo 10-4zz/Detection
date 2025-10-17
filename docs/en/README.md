@@ -1,6 +1,6 @@
 # A project for detection models in computer vision by PyTorch.
 
-## content
+## Content
 - [Introduction](#introduction)
 - [Setup](#setup)
 

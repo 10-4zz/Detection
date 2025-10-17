@@ -1,9 +1,6 @@
 """
 Writen by: ian
 """
-from typing import Optional, Union
-
-
 from models.architectures.base_architecture import BaseArchitecture
 from models.backbones.base_backbone import BaseBackbone
 from models.necks.base_neck import BaseNeck
@@ -16,7 +13,6 @@ class YOLO(BaseArchitecture):
     def __init__(
             self,
             version: str = None,
-            model_scale: Optional[Union[int, float, str]] = 1.0,
             backbone: BaseBackbone = None,
             neck: BaseNeck = None,
             head: BaseHead = None,

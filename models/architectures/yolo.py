@@ -86,6 +86,21 @@ class YOLO(BaseArchitecture):
         else:
             head_param, head_macs, head_flops = 0, 0, 0
         total_param = backbone_param + neck_param + head_param
+        total_macs = backbone_macs + neck_macs + head_macs
+        total_flops = backbone_flops + neck_flops + head_flops
+        print_data(
+            title="Total:",
+            data={
+                'param': total_param,
+                'macs': total_macs,
+                'flops': total_flops
+            },
+            unit={
+                'param': 'M',
+                'macs': 'G',
+                'flops': 'G'
+            }
+        )
         logger.info("===============================================================")
 
     def info(self) -> None:

@@ -9,7 +9,7 @@ class BaseNeck(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        pass
+        raise NotImplementedError("Please Implement forward method")
 
     def get_feat_index(self):
-        raise NotImplementedError("Please Implement this method")
+        raise NotImplementedError("Please Implement get_feat_index method")

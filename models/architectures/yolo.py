@@ -10,7 +10,7 @@ from models.necks.base_neck import BaseNeck
 from models.heads.base_head import BaseHead
 
 from utils.logger import logger
-from utils.summery import summery_model
+from utils.model_utils import summery_model, print_data
 from models.architectures import ARCHITECTURES_REGISTRY
 from models.backbones import build_backbone
 
@@ -42,6 +42,7 @@ class YOLO(BaseArchitecture):
             self.head = head
 
         self.info()
+        self.show_model_info()
 
     def backbone_forward(self, x) -> Tensor:
         self.backbone(x)
@@ -53,7 +54,38 @@ class YOLO(BaseArchitecture):
 
     def show_model_info(self) -> None:
         logger.info("========================Model Summery==========================")
-
+        backbone_param, backbone_macs, backbone_flops = summery_model(
+            model=self.backbone,
+            image_size=self.input_size
+        )
+        print_data(
+            title=f"Backbone: {self.backbone.__class__.__name__}",
+            data={
+                'param': backbone_param,
+                'macs': backbone_macs,
+                'flops': backbone_flops
+            },
+            unit={
+                'param': 'M',
+                'macs': 'G',
+                'flops': 'G'
+            }
+        )
+        if self.neck is not None:
+            neck_param, neck_macs, neck_flops = summery_model(
+                model=self.neck,
+                image_size=self.input_size
+            )
+        else:
+            neck_param, neck_macs, neck_flops = 0, 0, 0
+        if self.head is not None:
+            head_param, head_macs, head_flops = summery_model(
+                model=self.neck,
+                image_size=self.input_size
+            )
+        else:
+            head_param, head_macs, head_flops = 0, 0, 0
+        total_param = backbone_param + neck_param + head_param
         logger.info("===============================================================")
 
     def info(self) -> None:
@@ -63,7 +95,6 @@ class YOLO(BaseArchitecture):
         if self.neck is not None:
             logger.info(f"Load Neck: {self.neck.__class__.__name__}")
         logger.info(f"Load Head: {self.head.__class__.__name__}")
-        logger.info("========================================================")
 
 
 

@@ -136,7 +136,7 @@ class C3(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
-        return self.conv_layer3(torch.cat(self.module(self.conv_layer1(x)), self.conv_layer2(x)), dim=1)
+        return self.conv_layer3(torch.cat((self.module(self.conv_layer1(x)), self.conv_layer2(x)), dim=1))
 
     def inference(self, x: Tensor) -> Tensor:
         x1 = self.conv_layer1.inference(x)

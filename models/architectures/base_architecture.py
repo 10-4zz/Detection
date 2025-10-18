@@ -17,7 +17,6 @@ class BaseArchitecture(nn.Module):
         super(BaseArchitecture, self).__init__()
 
         self.input_size = input_size
-        self.show_model_info()
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError("Forward method not implemented.")

@@ -1,9 +1,17 @@
 """
 Writen by: ian
 """
+import torch.nn as nn
+
 from utils.registry import Registry
 
 BACKBONES_REGISTRY = Registry(
     registry_name="Backbone_Registry",
     component_dir=["models/backbones"],
 )
+
+
+def build_backbone(backbone_name: str, args) -> nn.Module:
+    create_fn = BACKBONES_REGISTRY.get(backbone_name)
+    backbone = create_fn(**args)
+    return backbone

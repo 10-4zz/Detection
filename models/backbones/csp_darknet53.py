@@ -2,7 +2,7 @@
 Writen by: ian
 """
 import warnings
-from typing import Dict
+from typing import Dict, Any
 
 import torch
 import torch.nn as nn
@@ -190,68 +190,48 @@ class SpatialPyramidPoolingFast(nn.Module):
             y2 = self.max_pool(y1)
             return self.conv_layer2.inference(torch.cat((x, y1, y2, self.max_pool(y2)), dim=1))
 
-def get_config(width_multiple: float, depth_multiple: float) -> Dict:
+
+def get_config(width_multiple: float, depth_multiple: float) -> Dict[str, Any]:
+    """
+    Generates the configuration for the CSPDarkNet53 backbone, optimized for readability and maintainability.
+    """
+    layer_params = [
+        (64, 128, 3),  # for layer1
+        (128, 256, 6),  # for layer2
+        (256, 512, 9),  # for layer3
+        (512, 1024, 3),  # for layer4
+    ]
+
     config = {
-        "in_proj":{
+        "in_proj": {
             "input_dim": 3,
             "out_channels": int(make_divisible(64 * width_multiple, divisor=16)),
             "kernel_size": 6,
             "stride": 2,
             "block_type": CBS,
         },
-        "layer1": {
-            "in_channels": int(make_divisible(64 * width_multiple, divisor=16)),
-            "out_channels": int(make_divisible(128 * width_multiple, divisor=16)),
+    }
+
+    for i, (in_ch_base, out_ch_base, depth_factor) in enumerate(layer_params):
+        layer_name = f"layer{i + 1}"
+        config[layer_name] = {
+            "in_channels": int(make_divisible(in_ch_base * width_multiple, divisor=16)),
+            "out_channels": int(make_divisible(out_ch_base * width_multiple, divisor=16)),
             "kernel_size": [3, None],
-            "stride": [2, 1],
+            "stride": [2, None],
             "num_blocks": [
                 1,
-                int(bound_fn(min_val=1, max_val=100, value=3 * depth_multiple))
+                int(bound_fn(min_val=1, max_val=100, value=depth_factor * depth_multiple))
             ],
             "block_type": [CBS, C3],
-        },
-        "layer2": {
-            "in_channels": int(make_divisible(128 * width_multiple, divisor=16)),
-            "out_channels": int(make_divisible(256 * width_multiple, divisor=16)),
-            "kernel_size": [3, None],
-            "stride": [2, 1],
-            "num_blocks": [
-                1,
-                int(bound_fn(min_val=1, max_val=100, value=6 * depth_multiple))
-            ],
-            "block_type": [CBS, C3],
-        },
-        "layer3": {
-            "in_channels": int(make_divisible(256 * width_multiple, divisor=16)),
-            "out_channels": int(make_divisible(512 * width_multiple, divisor=16)),
-            "kernel_size": [3, None],
-            "stride": [2, 1],
-            "num_blocks": [
-                1,
-                int(bound_fn(min_val=1, max_val=100, value=9 * depth_multiple))
-            ],
-            "block_type": [CBS, C3],
-        },
-        "layer4": {
-            "in_channels": int(make_divisible(512 * width_multiple, divisor=16)),
-            "out_channels": int(make_divisible(1024 * width_multiple, divisor=16)),
-            "kernel_size": [3, None],
-            "stride": [2, 1],
-            "num_blocks": [
-                1,
-                int(bound_fn(min_val=1, max_val=100, value=3 * depth_multiple))
-            ],
-            "block_type": [CBS, C3],
-        },
-        "layer5": {
-            "in_channels": int(make_divisible(1024 * width_multiple, divisor=16)),
-            "out_channels": int(make_divisible(1024 * width_multiple, divisor=16)),
-            "kernel_size": [5],
-            "num_blocks": [
-                1,
-            ],
-            "block_type": [SpatialPyramidPoolingFast],
-        },
+        }
+
+    config["layer5"] = {
+        "in_channels": int(make_divisible(1024 * width_multiple, divisor=16)),
+        "out_channels": int(make_divisible(1024 * width_multiple, divisor=16)),
+        "kernel_size": [5],
+        "num_blocks": [1],
+        "block_type": [SpatialPyramidPoolingFast],
     }
 
     return config
@@ -281,18 +261,46 @@ class CSPDarkNet53(BaseBackbone):
         self.layer5 = self.build_layer(cfg["layer5"])
 
     @staticmethod
-    def build_layer(cfg) -> nn.Sequential:
+    def build_layer(cfg: Dict) -> nn.Sequential:
         layers = []
-        for i in range(len(cfg["block_type"])):
-            for n in range(cfg["num_blocks"][i]):
-                layers.append(
-                    cfg["block_type"][i](
-                        in_channels=cfg["in_channels"] if n == 0 and i == 0 else cfg["out_channels"],
-                        out_channels=cfg["out_channels"],
-                        kernel_size=cfg["kernel_size"][i] if isinstance(cfg["kernel_size"], list) else cfg["kernel_size"],
-                        stride=cfg["stride"][i] if isinstance(cfg["stride"], list) else cfg["stride"],
+        current_in_channels = cfg["in_channels"]
+        out_channels = cfg["out_channels"]
+
+        block_types = cfg["block_type"]
+        num_blocks_list = cfg["num_blocks"]
+        num_block_types = len(block_types)
+        kernel_sizes = cfg.get("kernel_size", [None] * num_block_types)
+        strides = cfg.get("stride", [1] * num_block_types)
+
+        for i, (block_cls, num, ks, s) in enumerate(zip(
+                block_types, num_blocks_list, kernel_sizes, strides
+        )):
+            for n in range(num):
+                in_ch = current_in_channels if (i == 0 and n == 0) else out_channels
+
+                block_name = block_cls.__name__
+
+                if block_name == 'C3':
+                    layer = block_cls(
+                        in_channels=in_ch,
+                        out_channels=out_channels
                     )
-                )
+                elif block_name == 'SpatialPyramidPoolingFast':
+                    layer = block_cls(
+                        in_channels=in_ch,
+                        out_channels=out_channels,
+                        kernel_size=ks
+                    )
+                else:
+                    stride = s if n == 0 else 1
+                    layer = block_cls(
+                        in_channels=in_ch,
+                        out_channels=out_channels,
+                        kernel_size=ks,
+                        stride=stride
+                    )
+
+                layers.append(layer)
 
         return nn.Sequential(*layers)
 

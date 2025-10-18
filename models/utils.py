@@ -8,7 +8,7 @@ def auto_pad(
         kernel_size: Optional[Union[int, Tuple[int], List[int]]],
         padding: int = None,
         dilation: int = 1
-) -> Optional[List[int], int]:
+) -> Optional[Union[List[int], int]]:
     # Pad to 'same' shape outputs
     if dilation > 1:
         kernel_size = dilation * (kernel_size - 1) + 1 if isinstance(kernel_size, int) else [dilation * (x - 1) + 1 for x in kernel_size]  # actual kernel-size

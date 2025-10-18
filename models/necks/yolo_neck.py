@@ -71,3 +71,32 @@ class YOLOV5Neck(BaseNeck):
         pan_out2 = self.pan_c3_2(pan_out2)
 
         return fpn_out3, pan_out1, pan_out2
+
+    def inference(self, x: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+                Args:
+                    x (List[torch.Tensor]): The feature map list that obtain from backbone。
+                """
+        c3_feat, c4_feat, c5_feat = x
+
+        # --- FPN ---
+        fpn_out1 = self.fpn_conv1.inference(c5_feat)
+
+        fpn_out1_upsampled = self.upsample1(fpn_out1)
+        fpn_out2 = torch.cat([fpn_out1_upsampled, c4_feat], dim=1)
+        fpn_out2 = self.fpn_c3_1.inference(fpn_out2)
+
+        fpn_out2_upsampled = self.upsample2(self.fpn_conv2(fpn_out2))
+        fpn_out3 = torch.cat([fpn_out2_upsampled, c3_feat], dim=1)
+        fpn_out3 = self.fpn_c3_2.inference(fpn_out3)
+
+        # --- PAN ---
+        pan_out1 = self.pan_conv1.inference(fpn_out3)
+        pan_out1 = torch.cat([pan_out1, fpn_out2], dim=1)
+        pan_out1 = self.pan_c3_1.inference(pan_out1)
+
+        pan_out2 = self.pan_conv2.inference(pan_out1)
+        pan_out2 = torch.cat([pan_out2, fpn_out1], dim=1)
+        pan_out2 = self.pan_c3_2.inference(pan_out2)
+
+        return fpn_out3, pan_out1, pan_out2

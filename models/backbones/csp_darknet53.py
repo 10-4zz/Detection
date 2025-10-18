@@ -274,6 +274,25 @@ class CSPDarkNet53(BaseBackbone):
             stride=cfg["in_proj"]["stride"]
         )
 
-    def build_layer(self, cfg) -> nn.Sequential:
-        pass
+        self.layer1 = self.build_layer(cfg["layer1"])
+        self.layer2 = self.build_layer(cfg["layer2"])
+        self.layer3 = self.build_layer(cfg["layer3"])
+        self.layer4 = self.build_layer(cfg["layer4"])
+        self.layer5 = self.build_layer(cfg["layer5"])
+
+    @staticmethod
+    def build_layer(cfg) -> nn.Sequential:
+        layers = []
+        for i in range(len(cfg["block_type"])):
+            for n in range(cfg["num_blocks"][i]):
+                layers.append(
+                    cfg["block_type"][i](
+                        in_channels=cfg["in_channels"] if n == 0 and i == 0 else cfg["out_channels"],
+                        out_channels=cfg["out_channels"],
+                        kernel_size=cfg["kernel_size"][i] if isinstance(cfg["kernel_size"], list) else cfg["kernel_size"],
+                        stride=cfg["stride"][i] if isinstance(cfg["stride"], list) else cfg["stride"],
+                    )
+                )
+
+        return nn.Sequential(*layers)
 

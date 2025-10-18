@@ -296,3 +296,35 @@ class CSPDarkNet53(BaseBackbone):
 
         return nn.Sequential(*layers)
 
+    def inference(self, x: Tensor) -> Tensor:
+        if self.in_proj is not None:
+            x = self.in_proj.inference(x)
+            self.layer_out.append(x)
+
+        if self.layer1 is not None:
+            for block in self.layer1:
+                x = block.inference(x)
+            self.layer_out.append(x)
+
+        if self.layer2 is not None:
+            for block in self.layer2:
+                x = block.inference(x)
+            self.layer_out.append(x)
+
+        if self.layer3 is not None:
+            for block in self.layer3:
+                x = block.inference(x)
+            self.layer_out.append(x)
+
+        if self.layer4 is not None:
+            for block in self.layer4:
+                x = block.inference(x)
+            self.layer_out.append(x)
+
+        if self.layer5 is not None:
+            for block in self.layer5:
+                x = block.inference(x)
+            self.layer_out.append(x)
+
+        return x
+

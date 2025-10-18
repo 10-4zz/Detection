@@ -53,7 +53,7 @@ class YOLO(BaseArchitecture):
         pass
 
     def show_model_info(self) -> None:
-        logger.info("========================Model Summery==========================")
+        logger.info("=" * 30 + "Model Summery" + "=" * 30)
         backbone_param, backbone_macs, backbone_flops = summery_model(
             model=self.backbone,
             image_size=self.input_size
@@ -101,10 +101,9 @@ class YOLO(BaseArchitecture):
                 'flops': 'G'
             }
         )
-        logger.info("===============================================================")
 
     def info(self) -> None:
-        logger.info("========================================================")
+        logger.info("=" * 75)
         logger.info("Loading custom model...")
         logger.info(f"Load Backbone: {self.backbone.__class__.__name__}")
         if self.neck is not None:

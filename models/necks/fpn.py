@@ -7,8 +7,9 @@ import torch
 import torch.nn as nn
 
 from models.necks.base_neck import BaseNeck
-from models.components.yolo import C3
-from models.utils import auto_pad
+from models.components.yolo import CBS, C3
+
+from utils.logger import logger
 
 
 class FPN(BaseNeck):
@@ -35,17 +36,18 @@ class FPN(BaseNeck):
         self.fpn_layers = self._make_fpn_layers()
 
     def forward(self, x):
-        pass
+        if len(x) != self.layer_num:
+            logger.error("The length of input features must be equal to layer_num")
+
 
     def _make_fpn_layers(self) -> List:
         layers = []
         for _ in range(self.layer_num):
-            conv_layer = nn.Conv2d(
+            conv_layer = CBS(
                 self.in_channels,
                 self.out_channels,
                 kernel_size=self.kernel_size,
                 stride=self.stride,
-                padding=auto_pad(self.kernel_size, None, 1)
             )
 
             up_sample_layer = nn.Upsample(
@@ -62,7 +64,12 @@ class FPN(BaseNeck):
                 num_blocks=3,
                 shortcut=False,
             )
-            layer = [conv_layer, up_sample_layer, concat_layer, block]
+            layer = {
+                "conv_layer": conv_layer,
+                "up_sample_layer": up_sample_layer,
+                "concat_layer": concat_layer,
+                "block": block,
+            }
             layers.append(layer)
 
         return layers

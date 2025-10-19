@@ -25,7 +25,8 @@ class YOLOV5Neck(BaseNeck):
     ) -> None:
         super().__init__()
 
-        assert len(in_channels_list) == 3
+        assert len(in_channels_list) == 3, f"the length of input channel list must be 3, but got {len(in_channels_list)}"
+        self.in_channels_list = in_channels_list
         c3_in, c4_in, c5_in = in_channels_list
 
         num_c3_blocks = max(round(3 * depth_multiple), 1)
@@ -103,3 +104,6 @@ class YOLOV5Neck(BaseNeck):
         pan_out2 = self.pan_c3_2.inference(pan_out2)
 
         return fpn_out3, pan_out1, pan_out2
+
+    def get_feat_index(self) -> List[int]:
+        return self.in_channels_list

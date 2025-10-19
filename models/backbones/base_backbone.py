@@ -1,7 +1,7 @@
 """
 Writen by: ian
 """
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, Dict
 
 import torch.nn as nn
 
@@ -63,3 +63,9 @@ class BaseBackbone(nn.Module):
             return self.layer_out
 
         return [self.layer_out[i] for i in index]
+
+    def get_map_size(
+            self,
+            input_size: Optional[Union[int, Tuple[int], List[list]]] = 640,
+    ) -> Dict[str, int]:
+        raise NotImplementedError("Please Implement get_strides method")

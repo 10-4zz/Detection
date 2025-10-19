@@ -3,8 +3,8 @@ Writen by ian
 """
 from typing import Optional, Union, Tuple, List
 
+import torch
 import torch.nn as nn
-from torch import Tensor
 
 from utils.logger import logger
 
@@ -13,9 +13,11 @@ class BaseArchitecture(nn.Module):
     def __init__(
             self,
             input_size: Optional[Union[int, Tuple[int], List[list]]] = None,
+            device: str = None,
     ) -> None:
         super(BaseArchitecture, self).__init__()
 
+        self.device = device if device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.input_size = input_size
 
     def forward(self, *args, **kwargs):

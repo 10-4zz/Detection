@@ -1,4 +1,5 @@
 """
+For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 from typing import Optional, Union, Tuple, List, Dict
@@ -26,8 +27,9 @@ class YOLO(BaseArchitecture):
             neck: BaseNeck = None,
             head: BaseHead = None,
             input_size: Optional[Union[int, Tuple[int], List[list]]] = 640,
+            device: str = None,
     ) -> None:
-        super().__init__(input_size=input_size)
+        super().__init__(input_size=input_size, device=device)
 
         if backbone is None:
             logger.warning("Backbone is not provided, use the Yolo version 5 as default."
@@ -63,6 +65,7 @@ class YOLO(BaseArchitecture):
 
     def show_model_info(self) -> None:
         logger.info("=" * 30 + "Model Summery" + "=" * 30)
+        logger.info(f"Architecture: {self.__class__.__name__}")
         backbone_param, backbone_macs, backbone_flops = summery_model(
             model=self.backbone,
             image_size=self.input_size
@@ -83,10 +86,23 @@ class YOLO(BaseArchitecture):
         if self.neck is not None:
             feature_map_size = self.backbone.get_map_size(input_size=self.input_size)
             feature_index = self.neck.get_feat_index()
-
+            neck_inputs = self.create_virtual_input(all_feat_size=feature_map_size, feat_index=feature_index)
             neck_param, neck_macs, neck_flops = summery_model(
                 model=self.neck,
-                image_size=self.input_size
+                input_virtual=neck_inputs,
+            )
+            print_data(
+                title=f"Neck: {self.neck.__class__.__name__}",
+                data={
+                    'param': neck_param,
+                    'macs': neck_macs,
+                    'flops': neck_flops
+                },
+                unit={
+                    'param': 'M',
+                    'macs': 'G',
+                    'flops': 'G'
+                }
             )
         else:
             neck_param, neck_macs, neck_flops = 0, 0, 0
@@ -118,12 +134,14 @@ class YOLO(BaseArchitecture):
             self,
             all_feat_size: Dict[str, int],
             feat_index: List[int]
-    ) -> None:
+    ) -> List[Tensor]:
         virtual_inputs = []
         for index in feat_index:
             feat_size = all_feat_size[str(index)]
             virtual_input = torch.empty((1, index, feat_size, feat_size), device=self.device)
             virtual_inputs.append(virtual_input)
+
+        return virtual_inputs
 
     def info(self) -> None:
         logger.info("=" * 75)
@@ -132,6 +150,7 @@ class YOLO(BaseArchitecture):
         if self.neck is not None:
             logger.info(f"Load Neck: {self.neck.__class__.__name__}")
         logger.info(f"Load Head: {self.head.__class__.__name__}")
+        logger.info(f"The model will be deployed on {self.device.upper()}")
 
 
 

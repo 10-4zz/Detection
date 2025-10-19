@@ -1,4 +1,5 @@
 """
+For licensing see accompanying LICENSE file.
 Writen by ian
 """
 from typing import Optional, Union, Tuple, List

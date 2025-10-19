@@ -40,7 +40,7 @@ def log_environment_info():
         for i in range(gpu_count):
             gpu_name = torch.cuda.get_device_name(i)
             total_mem = torch.cuda.get_device_properties(i).total_memory / (1024 ** 3)
-            logger.info(f"  - GPU {i}: {gpu_name}, Total Memory: {total_mem:.2f} GB")
+            logger.info(f"- GPU {i}: {gpu_name}, Total Memory: {total_mem:.2f} GB")
     else:
         logger.info(f"{'CUDA Available':<25}: False (PyTorch is in CPU-only mode)")
 

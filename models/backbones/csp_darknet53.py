@@ -1,4 +1,5 @@
 """
+For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 from typing import Dict, Any, Optional, Union, List, Tuple
@@ -68,7 +69,7 @@ class CSPDarkNet53(BaseBackbone):
         super().__init__()
 
         cfg = get_config(width_multiple=width_multiple, depth_multiple=depth_multiple)
-        self.layer_out_size = {
+        self.strides = {
             str(int(64 * width_multiple)): 2,
             str(int(128 * width_multiple)): 4,
             str(int(256 * width_multiple)): 8,
@@ -169,8 +170,12 @@ class CSPDarkNet53(BaseBackbone):
             self,
             input_size: Optional[Union[int, Tuple[int], List[list]]] = 640,
     ) -> Dict[str, int]:
-        keys = self.layer_out_size.keys()
+        keys = self.strides.keys()
+        layer_out_size = {}
         for key in keys:
-            self.layer_out_size[key] = int(input_size / self.layer_out_size[key])
-        return self.layer_out_size
+            layer_out_size[key] = int(input_size / self.strides[key])
+        return layer_out_size
+
+    def get_strides(self) -> Dict[str, int]:
+        return self.strides
 

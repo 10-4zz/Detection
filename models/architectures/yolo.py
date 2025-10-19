@@ -17,6 +17,7 @@ from utils.model_utils import summery_model, print_data
 from models.architectures import ARCHITECTURES_REGISTRY
 from models.backbones import build_backbone
 from models.necks import build_neck
+from models.heads import build_head
 
 
 @ARCHITECTURES_REGISTRY.register(component_name='yolo', another_name='yolo_architecture')
@@ -46,7 +47,19 @@ class YOLO(BaseArchitecture):
                     "depth_multiple": 1.0
                 }
             )
-            self.head = head
+            self.head = build_head(
+                head_name="yolov5_head",
+                args={
+                    "num_classes": 80,
+                    "anchors": [
+                        [10, 13, 16, 30, 33, 23],
+                        [30, 61, 62, 45, 59, 119],
+                        [116, 90, 156, 198, 373, 326],
+                    ],
+                    "in_channels": [256, 512, 1024],
+                }
+            )
+            self.head.set_strides_anchors(self.backbone.get_strides())
         else:
             self.backbone = backbone
             self.neck = neck
@@ -107,9 +120,25 @@ class YOLO(BaseArchitecture):
         else:
             neck_param, neck_macs, neck_flops = 0, 0, 0
         if self.head is not None:
+            feature_map_size = self.backbone.get_map_size(input_size=self.input_size)
+            feature_index = self.head.get_feat_index()
+            head_inputs = self.create_virtual_input(all_feat_size=feature_map_size, feat_index=feature_index)
             head_param, head_macs, head_flops = summery_model(
-                model=self.neck,
-                image_size=self.input_size
+                model=self.head,
+                input_virtual=head_inputs,
+            )
+            print_data(
+                title=f"Head: {self.neck.__class__.__name__}",
+                data={
+                    'param': head_param,
+                    'macs': head_macs,
+                    'flops': head_flops
+                },
+                unit={
+                    'param': 'M',
+                    'macs': 'G',
+                    'flops': 'G'
+                }
             )
         else:
             head_param, head_macs, head_flops = 0, 0, 0

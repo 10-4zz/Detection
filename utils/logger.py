@@ -1,4 +1,5 @@
 """
+For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 import os
@@ -14,7 +15,6 @@ class CustomColorFormatter(logging.Formatter):
     """
     A custom logging formatter that adds colors to log levels.
     """
-    # 定义不同级别的颜色
     LEVEL_COLORS = {
         logging.DEBUG: 'grey',
         logging.INFO: 'blue',

@@ -1,3 +1,7 @@
+"""
+For licensing see accompanying LICENSE file.
+Writen by: ian
+"""
 from typing import Union, Optional
 
 

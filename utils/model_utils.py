@@ -1,3 +1,7 @@
+"""
+For licensing see accompanying LICENSE file.
+Writen by: ian
+"""
 from copy import deepcopy
 from typing import Any, Tuple, Dict, Optional
 import time
@@ -60,6 +64,7 @@ def print_data(title: str, data: Dict[str, Optional[float]], unit: Dict[str, str
         data (Dict[str, Optional[float]]): 包含原始数据的字典, e.g., {'param': 11.7e6, 'macs': 5.5e9, 'flops': None}
         unit (Dict[str, str]): 包含每个数据显示单位的字典, e.g., {'param': 'M', 'macs': 'G', 'flops': 'G'}
     """
+    logger.info("=" * 45)
     logger.info(title)
 
     divisors = {'K': 1e3, 'M': 1e6, 'G': 1e9}

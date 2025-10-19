@@ -69,4 +69,7 @@ class BaseBackbone(nn.Module):
             self,
             input_size: Optional[Union[int, Tuple[int], List[list]]] = 640,
     ) -> Dict[str, int]:
+        raise NotImplementedError("Please Implement get_map_size method")
+
+    def get_strides(self):
         raise NotImplementedError("Please Implement get_strides method")

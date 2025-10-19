@@ -2,7 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Any
 
 import torch
 import torch.nn as nn
@@ -15,6 +15,8 @@ class YOLOv5Head(BaseHead):
     """
     The head of YOLOv5.
     """
+    stride = None
+    dynamic = False
     def __init__(
             self,
             num_classes: int = 80,
@@ -41,8 +43,34 @@ class YOLOv5Head(BaseHead):
         self.anchor_grid = [torch.empty(0) for _ in range(self.num_detection_layer)]
         self.register_buffer('anchors', torch.tensor(anchors).float().view(self.num_detection_layer, -1, 2))
 
-    def forward(self, x: List[Tensor]) -> List[Tensor]:
-        z = []
+    def forward(self, x: List[Tensor]) -> Any:
+        inference_outputs = []
+        for i in range(self.num_detection_layer):
+            x[i] = self.detector_head[i](x[i])
+            bs, _, ny, nx = x[i].shape
+            x[i] = x[i].view(bs, self.num_anchors, self.num_outputs, ny, nx).permute(0, 1, 3, 4, 2).contiguous()
+
+            if not self.training:
+                if self.dynamic or self.grid[i].shape[2: 4] != x[i].shape[2: 4]:
+                    pass
+
+                xy, wh, conf = x[i].sigmoid().split((2, 2, self.num_classes + 1), 4)
+                xy = (xy * 2 + self.grid[i]) * self.stride[i]
+                wh = (wh * 2) ** 2 * self.anchor_grid[i]
+                y = torch.cat((xy, wh, conf), 4)
+                inference_outputs.append(y.view(bs, self.num_anchors * nx * ny, self.num_outputs))
+
+        return x if self.training else (torch.cat(inference_outputs, 1), x)
+
+    def _make_gird(self, nx: int = 20, ny: int = 20, i: int = 0) -> Tuple[Any, Any]:
+        d = self.anchors[i].device
+        t = self.anchors[i].dtype
+        shape = 1, self.num_anchors, ny, nx, 2
+        y, x = torch.arange(ny, device=d, dtype=t), torch.arange(nx, device=d, dtype=t)
+        yv, xv = torch.meshgrid(y, x)
+        grid = torch.stack((xv, yv), dim=2).expand(shape) - 0.5
+        anchor_grid = (self.anchors[i] * self.stride[i]).view(1, self.num_anchors, 1, 1, 2).expand(shape)
+        return grid, anchor_grid
 
 
 

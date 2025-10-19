@@ -34,7 +34,7 @@ class YOLO(BaseArchitecture):
 
         if backbone is None:
             logger.warning("Backbone is not provided, use the Yolo version 5 as default."
-                           "If you do not want to use yolov5, please set provide your own "
+                           "If you do not want to use yolov5, please provide your own "
                            "model base on yolo architecture.")
             self.backbone = build_backbone(
                 backbone_name="csp_darknet53",

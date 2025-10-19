@@ -174,7 +174,7 @@ class YOLO(BaseArchitecture):
 
     def info(self) -> None:
         logger.info("=" * 75)
-        logger.info("Loading custom model...")
+        logger.info("Loading model...")
         logger.info(f"Load Backbone: {self.backbone.__class__.__name__}")
         if self.neck is not None:
             logger.info(f"Load Neck: {self.neck.__class__.__name__}")

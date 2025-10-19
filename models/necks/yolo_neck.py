@@ -13,7 +13,7 @@ from models.necks import NECKS_REGISTRY
 
 
 @NECKS_REGISTRY.register(component_name='yolov5_neck')
-class YOLOV5Neck(BaseNeck):
+class YOLOv5Neck(BaseNeck):
     """
     The neck for YOLOv5
     """

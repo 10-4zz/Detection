@@ -9,6 +9,7 @@ import platform
 
 from utils.logger import logger
 
+
 def log_environment_info():
     """
     get and log thr information of environment.

@@ -69,11 +69,11 @@ class CSPDarkNet53(BaseBackbone):
 
         cfg = get_config(width_multiple=width_multiple, depth_multiple=depth_multiple)
         self.layer_out_size = {
-            str(64 * width_multiple): 2,
-            str(128 * width_multiple): 4,
-            str(256 * width_multiple): 8,
-            str(512 * width_multiple): 16,
-            str(1024 * width_multiple): 32,
+            str(int(64 * width_multiple)): 2,
+            str(int(128 * width_multiple)): 4,
+            str(int(256 * width_multiple)): 8,
+            str(int(512 * width_multiple)): 16,
+            str(int(1024 * width_multiple)): 32,
         }
 
         self.in_proj = cfg["in_proj"]["block_type"](

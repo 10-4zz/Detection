@@ -45,6 +45,5 @@ def log_environment_info():
         logger.info(f"{'CUDA Available':<25}: False (PyTorch is in CPU-only mode)")
 
 
-
 if __name__ == '__main__':
     log_environment_info()

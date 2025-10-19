@@ -1,7 +1,9 @@
 """
 Writen by: ian
 """
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union, Tuple, List, Dict
+
+import torch
 from torch import Tensor
 
 from models.architectures.base_architecture import BaseArchitecture
@@ -13,6 +15,7 @@ from utils.logger import logger
 from utils.model_utils import summery_model, print_data
 from models.architectures import ARCHITECTURES_REGISTRY
 from models.backbones import build_backbone
+from models.necks import build_neck
 
 
 @ARCHITECTURES_REGISTRY.register(component_name='yolo', another_name='yolo_architecture')
@@ -27,14 +30,20 @@ class YOLO(BaseArchitecture):
         super().__init__(input_size=input_size)
 
         if backbone is None:
-            logger.warning("Yolo version and backbone is not provided, use the Yolo version 5 as default."
-                           "If you do not want to use yolov5, please set the version or provide your own "
+            logger.warning("Backbone is not provided, use the Yolo version 5 as default."
+                           "If you do not want to use yolov5, please set provide your own "
                            "model base on yolo architecture.")
             self.backbone = build_backbone(
                 backbone_name="csp_darknet53",
                 args={"width_multiple": 1.0, "depth_multiple": 1.0}
             )
-            self.neck = neck
+            self.neck = build_neck(
+                neck_name="yolov5_neck",
+                args={
+                    "in_channels_list": [256, 512, 1024],
+                    "depth_multiple": 1.0
+                }
+            )
             self.head = head
         else:
             self.backbone = backbone
@@ -72,6 +81,9 @@ class YOLO(BaseArchitecture):
             }
         )
         if self.neck is not None:
+            feature_map_size = self.backbone.get_map_size(input_size=self.input_size)
+            feature_index = self.neck.get_feat_index()
+
             neck_param, neck_macs, neck_flops = summery_model(
                 model=self.neck,
                 image_size=self.input_size
@@ -101,6 +113,17 @@ class YOLO(BaseArchitecture):
                 'flops': 'G'
             }
         )
+
+    def create_virtual_input(
+            self,
+            all_feat_size: Dict[str, int],
+            feat_index: List[int]
+    ) -> None:
+        virtual_inputs = []
+        for index in feat_index:
+            feat_size = all_feat_size[str(index)]
+            virtual_input = torch.empty((1, index, feat_size, feat_size), device=self.device)
+            virtual_inputs.append(virtual_input)
 
     def info(self) -> None:
         logger.info("=" * 75)

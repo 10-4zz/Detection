@@ -1,7 +1,7 @@
 """
 Writen by: ian
 """
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Union, List, Tuple
 
 import torch.nn as nn
 from torch import Tensor
@@ -68,6 +68,13 @@ class CSPDarkNet53(BaseBackbone):
         super().__init__()
 
         cfg = get_config(width_multiple=width_multiple, depth_multiple=depth_multiple)
+        self.layer_out_size = {
+            str(64 * width_multiple): 2,
+            str(128 * width_multiple): 4,
+            str(256 * width_multiple): 8,
+            str(512 * width_multiple): 16,
+            str(1024 * width_multiple): 32,
+        }
 
         self.in_proj = cfg["in_proj"]["block_type"](
             in_channels=cfg["in_proj"]["input_dim"],
@@ -157,4 +164,13 @@ class CSPDarkNet53(BaseBackbone):
             self.layer_out.append(x)
 
         return x
+
+    def get_map_size(
+            self,
+            input_size: Optional[Union[int, Tuple[int], List[list]]] = 640,
+    ) -> Dict[str, int]:
+        keys = self.layer_out_size.keys()
+        for key in keys:
+            self.layer_out_size[key] = int(input_size / self.layer_out_size[key])
+        return self.layer_out_size
 

@@ -9,8 +9,10 @@ import torch.nn as nn
 from torch import Tensor
 
 from models.heads.base_head import BaseHead
+from models.heads import HEADS_REGISTRY
 
 
+@HEADS_REGISTRY.register(component_name='yolov5_neck')
 class YOLOv5Head(BaseHead):
     """
     The head of YOLOv5.

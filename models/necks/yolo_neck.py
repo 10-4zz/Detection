@@ -61,7 +61,8 @@ class YOLOV5Neck(BaseNeck):
         fpn_out2 = torch.cat([fpn_out1_upsampled, c4_feat], dim=1)
         fpn_out2 = self.fpn_c3_1(fpn_out2)
 
-        fpn_out2_upsampled = self.upsample2(self.fpn_conv2(fpn_out2))
+        fpn_out2 = self.fpn_conv2(fpn_out2)
+        fpn_out2_upsampled = self.upsample2(fpn_out2)
         fpn_out3 = torch.cat([fpn_out2_upsampled, c3_feat], dim=1)
         fpn_out3 = self.fpn_c3_2(fpn_out3)
 
@@ -90,7 +91,8 @@ class YOLOV5Neck(BaseNeck):
         fpn_out2 = torch.cat([fpn_out1_upsampled, c4_feat], dim=1)
         fpn_out2 = self.fpn_c3_1.inference(fpn_out2)
 
-        fpn_out2_upsampled = self.upsample2(self.fpn_conv2(fpn_out2))
+        fpn_out2 = self.fpn_conv2.inference(fpn_out2)
+        fpn_out2_upsampled = self.upsample2(fpn_out2)
         fpn_out3 = torch.cat([fpn_out2_upsampled, c3_feat], dim=1)
         fpn_out3 = self.fpn_c3_2.inference(fpn_out3)
 

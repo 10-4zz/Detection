@@ -36,9 +36,11 @@ pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https
 pip install -r requirements.txt
 ````
 
-在完成上述步骤之后，你可以在终端运行下面的命令来检查环境中的依赖：
+在完成上述步骤之后，你可以在终端运行下面的命令来检查环境中的依赖和cuda版本：
 ````
 bash scripts/check_env.sh
 ````
-如果所有的依赖都安装完毕且版本正确，你将会看到“All specified package versions are installed and correct.”的信息。
+如果所有的依赖都安装完毕且版本正确，将会看到“All specified package versions are installed and correct.”的信息。
+
+如果环境中的cuda版本满足需求，将会看到“Your NVIDIA driver version is sufficient for the CUDA runtime version used by PyTorch.”的信息。
 

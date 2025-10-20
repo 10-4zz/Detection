@@ -35,8 +35,10 @@ Install related dependencies:
 pip install -r requirements.txt
 ````
 
-After completing the above steps, you can run the command as below to check the dependencies for environment in terminal.
+After completing the above steps, you can run the command as below to check the dependencies and cuda version for environment in terminal.
 ````
 bash scripts/check_env.sh
 ````
 If all dependencies are correctly installed, you will see the message "All specified package versions are installed and correct.".
+
+If the CUDA version in the environment meets the requirements, you will see the message "Your NVIDIA driver version is sufficient for the CUDA runtime version used by PyTorch."

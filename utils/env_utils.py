@@ -5,7 +5,6 @@ Writen by: ian
 import os
 import torch
 import platform
-
 import sys
 from pathlib import Path
 from typing import Dict
@@ -17,6 +16,8 @@ from utils.logger import logger
 
 
 TORCH_VERSION = "2.5.1+cu118"
+TORCH_CHAUDIO_VERSION = "2.5.1+cu118"
+TORCH_VISION_VERSION = "0.20.1+cu118"
 
 
 def log_environment_info():
@@ -83,6 +84,8 @@ def parse_requirements() -> Dict[str, str]:
                     logger.warning(f"Could not parse line in requirements file: {line}")
 
     requirements['torch'] = TORCH_VERSION
+    requirements['torchaudio'] = TORCH_CHAUDIO_VERSION
+    requirements['torchvision'] = TORCH_VISION_VERSION
     return requirements
 
 
@@ -120,6 +123,68 @@ def check_dependencies() -> bool:
         logger.info("All specified package versions are installed and correct.")
 
     return all_ok
+
+
+def check_cuda_torch_compatibility():
+    """
+    Checks the compatibility between the system's NVIDIA driver CUDA version
+    and the CUDA version PyTorch was compiled with.
+    """
+    logger.info("Checking cuda versions...")
+
+    # --- System and Python Info ---
+    logger.info(f"{'Operating System':<28}: {platform.system()} {platform.release()}")
+    logger.info(f"{'Python Version':<28}: {sys.version.split(' ')[0]}")
+
+    # --- PyTorch Info ---
+    logger.info(f"{'PyTorch Version':<28}: {torch.__version__}")
+
+    if not torch.cuda.is_available():
+        logger.info("❌ PyTorch CUDA environment not found!")
+        logger.info("Your PyTorch installation is likely in CPU-only version.")
+        return
+
+    torch_cuda_version = torch.version.cuda
+    logger.info(f"{'PyTorch Compiled with CUDA':<28}: {torch_cuda_version}")
+
+    # --- System Driver Info ---
+    try:
+        import pynvml
+        pynvml.nvmlInit()
+
+        driver_version_str = pynvml.nvmlSystemGetDriverVersion()
+        cuda_driver_version_int = pynvml.nvmlSystemGetCudaDriverVersion_v2()
+
+        driver_cuda_major = cuda_driver_version_int // 1000
+        driver_cuda_minor = (cuda_driver_version_int % 1000) // 10
+
+        logger.info(f"{'System NVIDIA Driver Version':<28}: {driver_version_str}")
+        logger.info(f"{'Driver Supports up to CUDA':<28}: {driver_cuda_major}.{driver_cuda_minor}")
+
+        pynvml.nvmlShutdown()
+
+    except Exception as e:
+        logger.info("❌ Could not retrieve NVIDIA driver information.")
+        logger.info(f"Error: {e}")
+        logger.info("Please ensure the NVIDIA driver is correctly installed and ")
+        logger.info("the 'nvidia-ml-py' library is installed (`pip install nvidia-ml-py`).")
+        return
+
+    # --- Comparison and Conclusion ---
+    torch_cuda_major = int(torch_cuda_version.split('.')[0])
+    torch_cuda_minor = int(torch_cuda_version.split('.')[1])
+
+    if (driver_cuda_major > torch_cuda_major) or \
+            (driver_cuda_major == torch_cuda_major and driver_cuda_minor >= torch_cuda_minor):
+        logger.info("✅ Compatibility Check Passed!")
+        logger.info("Your NVIDIA driver version is sufficient for the CUDA runtime version used by PyTorch.")
+    else:
+        logger.info("❌ Compatibility Check Failed!")
+        logger.info("Reason: Your PyTorch requires CUDA runtime support for version "
+              f"{torch_cuda_major}.{torch_cuda_minor},")
+        logger.info("but your installed NVIDIA driver only supports up to CUDA version "
+              f"{driver_cuda_major}.{driver_cuda_minor}.")
+        logger.info("Solution: Please update your NVIDIA graphics driver to the latest version.")
 
 
 if __name__ == '__main__':

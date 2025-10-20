@@ -11,6 +11,13 @@ This project uses PyTorch to implement current mainstream and classic computer v
 In addition, some small tools for dataset conversion are implemented.
 
 ## Setup
+Clone this project from github to your own workspace:
+````
+# git clone https://github.com/10-4zz/Detection.git
+git clone git@github.com:10-4zz/Detection.git
+cd Detection
+````
+Note: please select the https or ssh according to your situation.
 
 Setup a conda environment:
 ````
@@ -27,3 +34,9 @@ Install related dependencies:
 ````
 pip install -r requirements.txt
 ````
+
+After completing the above steps, you can run the command as below to check the dependencies for environment in terminal.
+````
+bash scripts/check_env.sh
+````
+If all dependencies are correctly installed, you will see the message "All specified package versions are installed and correct.".

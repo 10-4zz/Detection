@@ -38,7 +38,11 @@ class YOLO(BaseArchitecture):
                            "model base on yolo architecture.")
             self.backbone = build_backbone(
                 backbone_name="csp_darknet53",
-                args={"width_multiple": 1.0, "depth_multiple": 1.0}
+                args={
+                    "width_multiple": 1.0,
+                    "depth_multiple": 1.0,
+                    "out_index": [2, 3, 4]
+                }
             )
             self.neck = build_neck(
                 neck_name="yolov5_neck",
@@ -68,13 +72,18 @@ class YOLO(BaseArchitecture):
         self.info()
         self.show_model_info()
 
-    def backbone_forward(self, x) -> Tensor:
-        self.backbone(x)
-
-        return x
+    def backbone_forward(self, x) -> List[Tensor]:
+        _ = self.backbone(x)
+        outs = self.backbone.get_layer_out()
+        return outs
 
     def forward(self, x) -> Tensor:
-        pass
+        features = self.backbone_forward(x)
+        if self.neck is not None:
+            features = self.neck(features)
+        features = self.head(features)
+
+        return features
 
     def show_model_info(self) -> None:
         logger.info("=" * 30 + "Model Summery" + "=" * 30)

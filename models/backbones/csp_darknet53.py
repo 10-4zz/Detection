@@ -65,8 +65,9 @@ class CSPDarkNet53(BaseBackbone):
             self,
             width_multiple: float,
             depth_multiple: float,
+            out_index: Optional[Union[List[int], Tuple[int]]] = None
     ) -> None:
-        super().__init__()
+        super().__init__(out_index=out_index)
 
         cfg = get_config(width_multiple=width_multiple, depth_multiple=depth_multiple)
         self.strides = {

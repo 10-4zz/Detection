@@ -12,9 +12,13 @@ from utils.logger import logger
 
 
 class BaseBackbone(nn.Module):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            out_index: Optional[Union[List[int], Tuple[int]]] = None
+    ) -> None:
         super().__init__()
 
+        self.out_index = out_index
         self.layer_out: List[Tensor] = []
 
         self.in_proj = None
@@ -58,12 +62,11 @@ class BaseBackbone(nn.Module):
 
         return x
 
-    def get_layer_out(self, index: Optional[Union[List[int], Tuple[int]]] = None) -> List[Tensor]:
-        if index is None:
-            logger.warning("No index provided, returning all layer outputs.")
-            return self.layer_out
-
-        return [self.layer_out[i] for i in index]
+    def get_layer_out(self) -> List[Tensor]:
+        if self.out_index is None:
+            logger.warning("No index provided, returning final outputs.")
+            return [self.layer_out[-1]]
+        return [self.layer_out[i] for i in self.out_index]
 
     def get_map_size(
             self,

@@ -2,12 +2,21 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
-import sys
 import os
 import torch
 import platform
 
+import sys
+from pathlib import Path
+from typing import Dict
+
+# Use the modern importlib.metadata to get package versions
+from importlib import metadata as importlib_metadata
+
 from utils.logger import logger
+
+
+TORCH_VERSION = "2.5.1+cu118"
 
 
 def log_environment_info():
@@ -45,5 +54,91 @@ def log_environment_info():
         logger.info(f"{'CUDA Available':<25}: False (PyTorch is in CPU-only mode)")
 
 
+def parse_requirements() -> Dict[str, str]:
+    """
+    Parses a requirements.txt file to extract packages with exact version pins.
+    Returns:
+        A dictionary mapping package names to their required versions.
+        e.g., {'torch': '1.13.1', 'numpy': '1.23.5'}
+    """
+    file_path = "requirements.txt"
+    requirements = {}
+    if not Path(file_path).is_file():
+        logger.error(f"Requirements file not found at: {file_path}")
+        return requirements
+
+    with open(file_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            # Ignore comments and empty lines
+            if not line or line.startswith('#'):
+                continue
+
+            # We are only interested in exact version matches (e.g., package==1.2.3)
+            if '==' in line:
+                try:
+                    package, version = line.split('==')
+                    requirements[package.strip()] = version.strip()
+                except ValueError:
+                    logger.warning(f"Could not parse line in requirements file: {line}")
+
+    requirements['torch'] = TORCH_VERSION
+    return requirements
+
+
+def check_dependencies() -> bool:
+    """
+    Checks if installed packages match the required versions.
+    Returns:
+        bool: True if all checks pass, False otherwise.
+    """
+    requirements  = parse_requirements()
+    logger.info("Checking package versions...")
+    all_ok = True
+
+    for package, required_version in requirements.items():
+        try:
+            # Get the version of the currently installed package
+            installed_version = importlib_metadata.version(package)
+
+            # Check if the installed version matches the required version
+            if installed_version != required_version:
+                all_ok = False
+                # Format the warning message exactly as requested
+                warning_msg = (
+                    f"Package '{package}' version is {installed_version}, "
+                    f"but version {required_version} is required. "
+                    "This is okay, but may cause version conflicts."
+                )
+                logger.warning(warning_msg)
+
+        except importlib_metadata.PackageNotFoundError:
+            all_ok = False
+            logger.error(f"Required package '{package}' is not installed.")
+
+    if all_ok:
+        logger.info("All specified package versions are correct.")
+
+    return all_ok
+
+
 if __name__ == '__main__':
     log_environment_info()
+
+    # Create a dummy requirements.txt for the example
+    dummy_requirements_content = """
+        # This is a comment, it will be ignored
+        torch==1.13.1  # An example of a correct version (assuming you have this)
+        numpy==99.9.9   # This version will definitely not match
+        requests        # This line will be ignored because it doesn't use '=='
+        non_existent_package==1.0.0 # This package is likely not installed
+    """
+    with open("requirements.txt", "w") as f:
+        f.write(dummy_requirements_content)
+
+    # Run the check
+    check_dependencies()
+
+    # Clean up the dummy file
+    os.remove("requirements.txt")
+

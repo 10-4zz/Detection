@@ -1,6 +1,8 @@
 """
 Writen by: ian
 """
+from typing import Dict, Any
+
 import torch.nn as nn
 
 from utils.registry import Registry
@@ -11,7 +13,7 @@ NECKS_REGISTRY = Registry(
 )
 
 
-def build_neck(neck_name: str, args) -> nn.Module:
+def build_neck(neck_name: str, args: Dict[str, Any]) -> nn.Module:
     create_fn = NECKS_REGISTRY.get(neck_name)
     neck = create_fn(**args)
     return neck

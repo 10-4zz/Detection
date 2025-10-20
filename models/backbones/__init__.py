@@ -2,6 +2,8 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+from typing import Dict, Any
+
 import torch.nn as nn
 
 from utils.registry import Registry
@@ -12,7 +14,7 @@ BACKBONES_REGISTRY = Registry(
 )
 
 
-def build_backbone(backbone_name: str, args) -> nn.Module:
+def build_backbone(backbone_name: str, args: Dict[str, Any]) -> nn.Module:
     create_fn = BACKBONES_REGISTRY.get(backbone_name)
     backbone = create_fn(**args)
     return backbone

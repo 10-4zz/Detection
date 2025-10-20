@@ -117,7 +117,7 @@ def check_dependencies() -> bool:
             logger.error(f"Required package '{package}' is not installed.")
 
     if all_ok:
-        logger.info("All specified package versions are correct.")
+        logger.info("All specified package versions are installed and correct.")
 
     return all_ok
 

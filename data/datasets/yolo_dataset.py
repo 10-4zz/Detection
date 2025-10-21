@@ -27,8 +27,8 @@ class CocoInMemory(COCO):
             self.createIndex()
 
 
-@DATASETS_REGISTRY.register(component_name='yolo_to_coco_cache_dataset', another_name='yolo_dataset')
-class YoloToCocoCacheDataset(Dataset):
+@DATASETS_REGISTRY.register(component_name='yolo_dataset')
+class YoloDataset(Dataset):
     """
     A PyTorch Dataset that reads a YOLO-formatted dataset, converts it to COCO format
     in memory, is compatible with COCO evaluation tools, and uses a cache file
@@ -152,7 +152,6 @@ class YoloToCocoCacheDataset(Dataset):
             records.append(record)
             img_id_counter += 1
 
-        # 保存到缓存文件
         cache_data = {
             'hash': self._get_hash(),
             'version': self.CACHE_VERSION,
@@ -182,51 +181,4 @@ class YoloToCocoCacheDataset(Dataset):
 
         return sample
 
-
-if __name__ == '__main__':
-    logger.info("--- Creating a dummy YOLO dataset for demonstration ---")
-    os.makedirs('dummy_dataset/images/train', exist_ok=True)
-    os.makedirs('dummy_dataset/labels/train', exist_ok=True)
-
-    with open('dummy_dataset/class_names.txt', 'w') as f:
-        f.write('cat\ndog\n')
-
-    dummy_image1 = Image.new('RGB', (640, 480), color='red')
-    dummy_image1.save('dummy_dataset/images/train/img1.jpg')
-    with open('dummy_dataset/labels/train/img1.txt', 'w') as f:
-        f.write('0 0.5 0.5 0.2 0.3\n')  # cat
-        f.write('1 0.2 0.3 0.1 0.15\n')  # dog
-
-    dummy_image2 = Image.new('RGB', (800, 600), color='blue')
-    dummy_image2.save('dummy_dataset/images/train/img2.jpg')
-    with open('dummy_dataset/labels/train/img2.txt', 'w') as f:
-        f.write('0 0.7 0.6 0.4 0.5\n')  # cat
-
-    logger.info("\n--- First run: Caching the dataset ---")
-    dataset = YoloToCocoCacheDataset(
-        image_dir='dummy_dataset/images/train',
-        label_dir='dummy_dataset/labels/train',
-        class_names_file='dummy_dataset/class_names.txt'
-    )
-    logger.info(f"Dataset size: {len(dataset)}")
-
-    logger.info("\n--- Second run: Loading from cache ---")
-    dataset_from_cache = YoloToCocoCacheDataset(
-        image_dir='dummy_dataset/images/train',
-        label_dir='dummy_dataset/labels/train',
-        class_names_file='dummy_dataset/class_names.txt'
-    )
-    logger.info(f"Dataset size: {len(dataset_from_cache)}")
-
-    logger.info("\n--- Verifying COCO evaluation compatibility ---")
-    coco_api = dataset.coco_api
-    cat_ids = coco_api.getCatIds()
-    cat_names = [c['name'] for c in coco_api.loadCats(cat_ids)]
-    logger.info(f"Category IDs found by coco_api: {cat_ids}")
-    logger.info(f"Category Names found by coco_api: {cat_names}")
-
-    import shutil
-
-    shutil.rmtree('dummy_dataset')
-    os.remove('dummy_dataset/labels/train/train.cache')
 

@@ -10,3 +10,11 @@ ARCHITECTURES_REGISTRY = Registry(
 )
 
 
+def build_architecture(architecture_name: str, **kwargs):
+    """
+    Build a architecture.
+    """
+    create_fn = ARCHITECTURES_REGISTRY.get(architecture_name)
+    architecture = create_fn(**kwargs)
+    return architecture
+

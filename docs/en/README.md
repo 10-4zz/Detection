@@ -5,10 +5,7 @@
 - [Setup](#setup)
 
 ## Introduction
-This project uses PyTorch to implement current mainstream and classic computer vision detection models, including but not limited to the following:
-- Yolo series
-
-In addition, some small tools for dataset conversion are implemented.
+This document will introduce how to train model from zero through the project.
 
 ## Setup
 Clone this project from github to your own workspace:
@@ -42,3 +39,8 @@ bash scripts/check_env.sh
 If all dependencies are correctly installed, you will see the message "All specified package versions are installed and correct.".
 
 If the CUDA version in the environment meets the requirements, you will see the message "Your NVIDIA driver version is sufficient for the CUDA runtime version used by PyTorch."
+
+If you want to use other version of torch, you can refer to the official website: https://pytorch.org/get-started/previous-versions/.
+
+And you also can use other cuda version, but it may occur conflict in different packages(Different torch version also can make your environment get conflict).
+

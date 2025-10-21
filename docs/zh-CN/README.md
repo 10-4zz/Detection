@@ -5,11 +5,7 @@
 - [安装](#安装)
 
 ## 简介
-本项目使用Pytorch实现了目前主流或者经典的计算机视觉检测模型，包含但不限于以下模型：
-- Yolo系列
-
-此外，实现了一些数据集转换的小工具。
-
+这个文档将会介绍如何使用本项目从零开始训练一个模型。
 
 ## 安装
 从github克隆本项目到工作目录下:
@@ -44,3 +40,6 @@ bash scripts/check_env.sh
 
 如果环境中的cuda版本满足需求，将会看到“Your NVIDIA driver version is sufficient for the CUDA runtime version used by PyTorch.”的信息。
 
+如果你想要使用其他版本的torch，你可以参考官网：https://pytorch.org/get-started/previous-versions/.
+
+你也可以使用其他版本的cuda，但是这可能会让不同的package之间产生冲突（包括使用其他版本的torch也可能会让你的环境出现冲突）。

@@ -2,14 +2,17 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
-from models.architectures.yolo import YOLO
+from models import build_model
 from utils.logger import logger
 from utils.env_utils import log_environment_info
+from utils.opts import get_args
 
 
 def main():
+    # get args
+    args = get_args().parse_args()
     log_environment_info()
-    model = YOLO(device='cpu')
+    model = build_model()
 
 
 if __name__ == "__main__":

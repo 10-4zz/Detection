@@ -4,3 +4,4 @@ nvidia-ml-py==13.580.82
 tqdm==4.67.1
 pycocotools==2.0.10
 numpy==1.26.0
+pillow~=11.3.0

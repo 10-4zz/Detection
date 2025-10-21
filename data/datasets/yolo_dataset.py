@@ -14,6 +14,7 @@ from PIL import Image
 from collections import defaultdict
 
 from utils.logger import logger
+from data.datasets import DATASETS_REGISTRY, IMAGE_FILE_TYPE
 
 
 class CocoInMemory(COCO):
@@ -26,6 +27,7 @@ class CocoInMemory(COCO):
             self.createIndex()
 
 
+@DATASETS_REGISTRY.register(component_name='yolo_to_coco_cache_dataset', another_name='yolo_dataset')
 class YoloToCocoCacheDataset(Dataset):
     """
     A PyTorch Dataset that reads a YOLO-formatted dataset, converts it to COCO format
@@ -101,7 +103,7 @@ class YoloToCocoCacheDataset(Dataset):
             base_name = os.path.splitext(ann_file_name)[0]
 
             img_path = None
-            for ext in ['.jpg', '.jpeg', '.png', '.bmp', '.JPG', '.PNG']:
+            for ext in IMAGE_FILE_TYPE:
                 potential_path = os.path.join(self.image_dir, base_name + ext)
                 if os.path.exists(potential_path):
                     img_path = potential_path

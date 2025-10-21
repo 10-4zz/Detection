@@ -9,6 +9,8 @@ from torch.utils.data import Dataset
 from utils.registry import Registry
 
 
+IMAGE_FILE_TYPE = ['.jpg', '.jpeg', '.png', '.bmp', '.JPG', '.PNG']
+
 DATASETS_REGISTRY = Registry(
     registry_name="DATASETS",
     component_dir=["data/datasets"],

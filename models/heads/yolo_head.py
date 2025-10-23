@@ -22,15 +22,13 @@ class YOLOv5Head(BaseHead):
     dynamic = False
     def __init__(
             self,
-            num_classes: int = 80,
-            anchors: Optional[Union[Tuple, List]] = (),
-            in_channels: Optional[Union[Tuple[int], List[int]]] = (),
+            opts: argparse.Namespace,
     ):
-        super().__init__()
-        self.in_channels_list = in_channels
+        super().__init__(opts)
+        anchors = getattr(opts, "model.head.yolov5.anchors", 3)
+        self.in_channels_list = getattr(opts, "model.head.yolov5.in_channels", None)
 
-        self.num_classes = num_classes
-        self.num_outputs = num_classes + 5
+        self.num_outputs = self.num_classes + 5
         self.num_detection_layer = len(anchors)
         self.num_anchors = len(anchors[0]) // 2
 
@@ -41,7 +39,7 @@ class YOLOv5Head(BaseHead):
                 kernel_size=1,
                 stride=1,
             )
-            for x in in_channels
+            for x in self.in_channels_list
         )
 
         self.grid = [torch.empty(0) for _ in range(self.num_detection_layer)]
@@ -97,7 +95,13 @@ class YOLOv5Head(BaseHead):
             default=(),
             help='Define anchor sizes as a flat list, e.g., --anchors 10 13 16 30 33 23'
         )
-        group.add_argument("--model.head.num_classes.in_channels", type=int, default=80, help="The number of classes.")
+        parser.add_argument(
+            '--model.head.yolov5.in_channels',
+            nargs='+',
+            type=int,
+            default=(),
+            help='The input channels of the YOLOv5 head.'
+        )
 
         return parser
 

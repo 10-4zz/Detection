@@ -4,8 +4,6 @@ Writen by: ian
 """
 import argparse
 
-import torch.nn as nn
-
 from models.base import Base
 
 
@@ -15,6 +13,9 @@ class BaseHead(Base):
             opts: argparse.Namespace,
     ) -> None:
         super().__init__(opts)
+
+        self.num_classes = getattr(opts, "model.head.num_classes", 80)
+        self.opts = opts
 
     def forward(self, x):
         raise NotImplementedError

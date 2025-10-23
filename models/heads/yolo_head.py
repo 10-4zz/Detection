@@ -2,6 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 from typing import Tuple, List, Optional, Any, Union, Dict
 
 import torch
@@ -82,6 +83,23 @@ class YOLOv5Head(BaseHead):
     def set_strides_anchors(self, all_strides: Dict[str, int]) -> None:
         self.stride = torch.tensor([v for k, v in all_strides.items() if int(k) in self.in_channels_list])
         self.anchors /= self.stride.view(-1, 1, 1)
+
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser):
+        """Add model-specific arguments"""
+
+        group = parser.add_argument_group(title=cls.__name__)
+        group.add_argument("--model.head.yolov5.anchors", type=str, default=None, help="The anchors of the head.")
+        parser.add_argument(
+            '--model.head.yolov5.anchors',
+            nargs='+',
+            type=int,
+            default=(),
+            help='Define anchor sizes as a flat list, e.g., --anchors 10 13 16 30 33 23'
+        )
+        group.add_argument("--model.head.num_classes.in_channels", type=int, default=80, help="The number of classes.")
+
+        return parser
 
 
 

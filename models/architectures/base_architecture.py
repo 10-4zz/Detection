@@ -2,24 +2,22 @@
 For licensing see accompanying LICENSE file.
 Writen by ian
 """
-from typing import Optional, Union, Tuple, List
+import argparse
 
 import torch
 import torch.nn as nn
 
+from models.base import Base
 from utils.logger import logger
 
 
-class BaseArchitecture(nn.Module):
+class BaseArchitecture(Base):
     def __init__(
             self,
-            input_size: Optional[Union[int, Tuple[int], List[list]]] = None,
-            device: str = None,
+            opts: argparse.Namespace,
     ) -> None:
-        super(BaseArchitecture, self).__init__()
+        super().__init__(opts)
 
-        self.device = device if device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.input_size = input_size
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError("Forward method not implemented.")
@@ -30,7 +28,7 @@ class BaseArchitecture(nn.Module):
         FLOPs and so on.
         """
         logger.warning(
-            f"If you want to learn about the information about {self.__class__.__name__}'s parameters, FLOPS eta, "
+            f"If you want to learn about the information about {self.__class__.__name__}'s parameters, FLOPS and so on, "
             "please implement the method get_model_info in your class."
         )
 
@@ -40,6 +38,15 @@ class BaseArchitecture(nn.Module):
         :return:
         """
         pass
+
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser):
+        """Add model-specific arguments"""
+
+        group = parser.add_argument_group(title=cls.__name__)
+        group.add_argument("--model.architecture.name", type=str, default=None, help="The name of the architecture.")
+
+        return parser
 
 
 

@@ -2,6 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 from typing import Dict, List
 import os
 import importlib
@@ -29,6 +30,7 @@ class Registry:
         self._registry: Dict = {}
 
         self._loaded = False
+        self.arguments_accessed = False
 
     def info(self) -> str:
         return f"Registry: {self.registry_name}, Number of items: {len(self._registry)}"
@@ -80,3 +82,21 @@ class Registry:
     def get_values(self):
         self._load_components()
         return self._registry.values()
+
+    def items(self):
+        self._load_components()
+        return self._registry.items()
+
+    def all_arguments(self, parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+        """
+        Iterates through all items and fetches their arguments.
+
+        Note: make sure that all items are already registered before calling this method.
+        """
+        self._load_components()
+        self.arguments_accessed = True
+
+        for _, item in self.items():
+            parser = item.add_arguments(parser)
+
+        return parser

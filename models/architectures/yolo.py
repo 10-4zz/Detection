@@ -2,15 +2,13 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
-from typing import Optional, Union, Tuple, List, Dict
+import argparse
+from typing import List, Dict
 
 import torch
 from torch import Tensor
 
 from models.architectures.base_architecture import BaseArchitecture
-from models.backbones.base_backbone import BaseBackbone
-from models.necks.base_neck import BaseNeck
-from models.heads.base_head import BaseHead
 
 from utils.logger import logger
 from utils.model_utils import summery_model, print_data
@@ -24,13 +22,13 @@ from models.heads import build_head
 class YOLO(BaseArchitecture):
     def __init__(
             self,
-            backbone: BaseBackbone = None,
-            neck: BaseNeck = None,
-            head: BaseHead = None,
-            input_size: Optional[Union[int, Tuple[int], List[list]]] = 640,
-            device: str = None,
+            opts: argparse.Namespace,
     ) -> None:
-        super().__init__(input_size=input_size, device=device)
+        super().__init__(opts)
+
+        backbone = getattr(opts, "model.architecture.yolo.backbone", None)
+        neck = getattr(opts, "model.architecture.yolo.neck", None)
+        head = getattr(opts, "model.architecture.yolo.head", None)
 
         if backbone is None:
             logger.warning("Backbone is not provided, use the Yolo version 5 as default."
@@ -190,6 +188,16 @@ class YOLO(BaseArchitecture):
         logger.info(f"Load Head: {self.head.__class__.__name__}")
         logger.info(f"The model will be deployed on {self.device.upper()}")
 
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser):
+        """Add model-specific arguments"""
+
+        group = parser.add_argument_group(title=cls.__name__)
+        group.add_argument("--model.architecture.yolo.backbone", type=str, default=None, help="Backbone of the model")
+        group.add_argument("--model.architecture.yolo.neck", type=str, default=None, help="Neck of the model")
+        group.add_argument("--model.architecture.yolo.head", type=str, default=None, help="Head of the model")
+
+        return parser
 
 
 if __name__ == "__main__":

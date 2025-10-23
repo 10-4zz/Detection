@@ -2,6 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 from typing import Dict, Any, Optional, Union, List, Tuple
 
 import torch.nn as nn
@@ -63,12 +64,12 @@ def get_config(width_multiple: float, depth_multiple: float) -> Dict[str, Any]:
 class CSPDarkNet53(BaseBackbone):
     def __init__(
             self,
-            width_multiple: float,
-            depth_multiple: float,
-            out_index: Optional[Union[List[int], Tuple[int]]] = None
+            opts: argparse.Namespace,
     ) -> None:
-        super().__init__(out_index=out_index)
+        super().__init__(opts)
 
+        width_multiple = getattr(opts, "model.backbone.csp_darknet53.width_multiple", 1.0)
+        depth_multiple = getattr(opts, "model.backbone.csp_darknet53.depth_multiple", 1.0)
         cfg = get_config(width_multiple=width_multiple, depth_multiple=depth_multiple)
         self.strides = {
             str(int(64 * width_multiple)): 2,
@@ -179,4 +180,24 @@ class CSPDarkNet53(BaseBackbone):
 
     def get_strides(self) -> Dict[str, int]:
         return self.strides
+
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser):
+        """Add model-specific arguments"""
+
+        group = parser.add_argument_group(title=cls.__name__)
+        group.add_argument(
+            "--model.backbone.csp_darknet53.width_multiple",
+            type=float,
+            default=1.0,
+            help="The width multiple of the CSPDarkNet53."
+        )
+        group.add_argument(
+            "--model.backbone.csp_darknet53.depth_multiple",
+            type=float,
+            default=1.0,
+            help="The depth multiple of the CSPDarkNet53."
+        )
+
+        return parser
 

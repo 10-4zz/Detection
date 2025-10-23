@@ -2,10 +2,12 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 from typing import Dict, Any
 
 import torch.nn as nn
 
+from models.heads.base_head import BaseHead
 from utils.registry import Registry
 
 HEADS_REGISTRY = Registry(
@@ -20,3 +22,12 @@ def build_head(head_name: str, args: Dict[str, Any]) -> nn.Module:
     return head
 
 
+def arguments_heads(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    get all arguments for heads.
+    :param parser:
+    :return:
+    """
+    parser = BaseHead.add_arguments(parser=parser)
+    parser = HEADS_REGISTRY.all_arguments(parser=parser)
+    return parser

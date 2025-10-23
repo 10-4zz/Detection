@@ -3,11 +3,10 @@ For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 import argparse
-from typing import Tuple, List, Optional, Any, Union, Dict
+from typing import Tuple, List, Any, Dict
 
 import torch
 import torch.nn as nn
-from torch import Tensor
 
 from models.heads.base_head import BaseHead
 from models.heads import HEADS_REGISTRY

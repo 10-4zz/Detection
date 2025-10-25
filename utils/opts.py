@@ -7,7 +7,6 @@ import argparse
 import collections
 import re
 import os
-from typing import List, Optional
 
 import yaml
 
@@ -190,17 +189,29 @@ def extract_opts_with_prefix_replacement(
     return argparse.Namespace(**result_dict)
 
 
-def base_args():
+def common_args():
     parser = argparse.ArgumentParser(description="Detection Model Arguments")
 
     # Add basic arguments
-    parser.add_argument('--seed', type=int, default=42, help='Random seed')
-    parser.add_argument('--device', type=str, default='cuda', help='Device to use for training')
     parser.add_argument('--config', type=str, default=None, help='Path to config file')
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size for training')
-    parser.add_argument('--image_size', type=int, default=640, help='Path to dataset')
-    parser.add_argument('--output_dir', type=str, default='./output', help='Output directory')
-    parser.add_argument('--tag', type=str, default='', help='Tag for the experiment')
+    parser.add_argument('--common.seed', type=int, default=42, help='Random seed')
+    parser.add_argument('--common.device', type=str, default='cuda', help='Device to use for training')
+    parser.add_argument('--common.output_dir', type=str, default='./output', help='Output directory')
+    parser.add_argument('--common.tag', type=str, default='', help='Tag for the experiment')
+
+    return parser
+
+
+def data_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    get all arguments for data.
+    :param parser:
+    :return:
+    """    # Add data specific arguments
+    parser.add_argument('--data.dataset_path', type=str, default='./data', help='Path to dataset')
+    parser.add_argument('--data.num_workers', type=int, default=4, help='Number of data loading workers')
+    parser.add_argument('--data.batch_size', type=int, default=16, help='Batch size for training')
+    parser.add_argument('--data.image_size', type=int, default=640, help='Path to dataset')
 
     return parser
 
@@ -218,7 +229,7 @@ def model_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 # TODO: there may be a better way to organize args for different use cases
 def get_train_args() -> argparse.Namespace:
-    parser = base_args()
+    parser = common_args()
     parser = model_args(parser=parser)
 
     # Add training specific arguments

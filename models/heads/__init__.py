@@ -16,9 +16,10 @@ HEADS_REGISTRY = Registry(
 )
 
 
-def build_head(head_name: str, args: Dict[str, Any]) -> nn.Module:
+def build_head(opts: argparse.Namespace) -> nn.Module:
+    head_name = getattr(opts, "model.head.name", None)
     create_fn = HEADS_REGISTRY.get(head_name)
-    head = create_fn(**args)
+    head = create_fn(opts)
     return head
 
 

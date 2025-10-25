@@ -1,6 +1,7 @@
 """
 Writen by: ian
 """
+import argparse
 from typing import List, Tuple
 
 import torch
@@ -20,10 +21,11 @@ class YOLOv5Neck(BaseNeck):
 
     def __init__(
             self,
+            opts: argparse.Namespace,
             in_channels_list: List[int],
             depth_multiple: float = 1,
     ) -> None:
-        super().__init__()
+        super().__init__(opts)
 
         assert len(in_channels_list) == 3, f"the length of input channel list must be 3, but got {len(in_channels_list)}"
         self.in_channels_list = in_channels_list

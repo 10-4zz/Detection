@@ -2,6 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 from typing import Dict, Any
 
 import torch.nn as nn
@@ -12,7 +13,7 @@ from models.heads import build_head
 from models.necks import build_neck
 
 
-def build_model(components_name: Dict[str, str], components_args: Dict[str, Any]) -> nn.Module:
+def build_model(opts: argparse.Namespace) -> nn.Module:
     """
     Build a model.
     """

@@ -3,7 +3,6 @@ For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 import argparse
-from typing import Dict, Any
 
 import torch.nn as nn
 
@@ -16,9 +15,10 @@ BACKBONES_REGISTRY = Registry(
 )
 
 
-def build_backbone(backbone_name: str, args: Dict[str, Any]) -> nn.Module:
+def build_backbone(opts: argparse.Namespace) -> nn.Module:
+    backbone_name = getattr(opts, "model.backbone.name", None)
     create_fn = BACKBONES_REGISTRY.get(backbone_name)
-    backbone = create_fn(**args)
+    backbone = create_fn(opts)
     return backbone
 
 

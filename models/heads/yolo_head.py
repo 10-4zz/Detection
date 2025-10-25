@@ -86,8 +86,7 @@ class YOLOv5Head(BaseHead):
         """Add model-specific arguments"""
 
         group = parser.add_argument_group(title=cls.__name__)
-        group.add_argument("--model.head.yolov5.anchors", type=str, default=None, help="The anchors of the head.")
-        parser.add_argument(
+        group.parser.add_argument(
             '--model.head.yolov5.anchors',
             nargs='+',
             type=int,

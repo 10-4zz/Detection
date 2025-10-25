@@ -111,3 +111,25 @@ class YOLOv5Neck(BaseNeck):
 
     def get_feat_index(self) -> List[int]:
         return self.in_channels_list
+    
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser):
+        """Add model-specific arguments"""
+
+        group = parser.add_argument_group(title=cls.__name__)
+        group.parser.add_argument(
+            '--model.neck.yolov5.in_channels_list',
+            nargs='+',
+            type=int,
+            default=(),
+            help='Define in_channels sizes as a flat list.'
+        )
+        parser.add_argument(
+            '--model.neck.yolov5.depth_multiple',
+            type=float,
+            default=1.0,
+            help='The depth multiple of the YOLOv5.'
+        )
+
+        return parser
+

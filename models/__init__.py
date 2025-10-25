@@ -3,43 +3,34 @@ For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 import argparse
-from typing import Dict, Any
 
 import torch.nn as nn
 
-from models.architectures import build_architecture
-from models.backbones import build_backbone
-from models.heads import build_head
-from models.necks import build_neck
+from models.architectures import build_architecture, arguments_architecture
+from models.backbones import arguments_backbone
+from models.heads import arguments_heads
+from models.necks import arguments_necks
 
 
 def build_model(opts: argparse.Namespace) -> nn.Module:
     """
     Build a model.
     """
-    backbone = build_backbone(
-        backbone_name=components_name['backbone'],
-        args=components_args['backbone']
-    )
-    if components_name['neck'] is not None:
-        neck = build_neck(
-            neck_name=components_name['neck'],
-            args=components_args['neck']
-        )
-    else:
-        neck = None
-    head = build_head(
-        head_name=components_name['head'],
-        args=components_args['head']
-    )
-    model_args = {
-        "backbone": backbone,
-        "neck": neck,
-        "head": head
-    }
-    model = build_architecture(
-        architecture_name=components_name['architecture'],
-        args=model_args
-    )
+    model = build_architecture(opts=opts)
+
     return model
+
+
+
+def arguments_model(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    get all arguments for model.
+    :param parser:
+    :return:
+    """
+    parser = arguments_architecture(parser=parser)
+    parser = arguments_backbone(parser=parser)
+    parser = arguments_necks(parser=parser)
+    parser = arguments_heads(parser=parser)
+    return parser
 

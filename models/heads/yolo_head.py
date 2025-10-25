@@ -24,8 +24,8 @@ class YOLOv5Head(BaseHead):
             opts: argparse.Namespace,
     ):
         super().__init__(opts)
-        anchors = getattr(opts, "model.head.yolov5.anchors", 3)
-        self.in_channels_list = getattr(opts, "model.head.yolov5.in_channels", None)
+        anchors = getattr(opts, "model.head.yolov5_head.anchors", 3)
+        self.in_channels_list = getattr(opts, "model.head.yolov5_head.in_channels", None)
 
         self.num_outputs = self.num_classes + 5
         self.num_detection_layer = len(anchors)
@@ -86,15 +86,15 @@ class YOLOv5Head(BaseHead):
         """Add model-specific arguments"""
 
         group = parser.add_argument_group(title=cls.__name__)
-        group.parser.add_argument(
-            '--model.head.yolov5.anchors',
+        group.add_argument(
+            '--model.head.yolov5_head.anchors',
             nargs='+',
             type=int,
             default=(),
             help='Define anchor sizes as a flat list, e.g., --anchors 10 13 16 30 33 23'
         )
-        parser.add_argument(
-            '--model.head.yolov5.in_channels',
+        group.add_argument(
+            '--model.head.yolov5_head.in_channels',
             nargs='+',
             type=int,
             default=(),

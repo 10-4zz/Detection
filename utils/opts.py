@@ -7,8 +7,11 @@ import argparse
 import collections
 import re
 import os
+from typing import List, Optional
 
 import yaml
+
+from models import arguments_model
 
 from utils.ddp_utils import is_master
 from utils.logger import logger
@@ -187,17 +190,46 @@ def extract_opts_with_prefix_replacement(
     return argparse.Namespace(**result_dict)
 
 
-
 def base_args():
     parser = argparse.ArgumentParser(description="Detection Model Arguments")
 
     # Add basic arguments
+    parser.add_argument('--seed', type=int, default=42, help='Random seed')
+    parser.add_argument('--device', type=str, default='cuda', help='Device to use for training')
     parser.add_argument('--config', type=str, default=None, help='Path to config file')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training')
-    parser.add_argument('--image_size', type=int, default=224, help='Path to dataset')
-    parser.add_argument('--resume', action='store_true', help='resume from checkpoint')
+    parser.add_argument('--batch_size', type=int, default=16, help='Batch size for training')
+    parser.add_argument('--image_size', type=int, default=640, help='Path to dataset')
     parser.add_argument('--output_dir', type=str, default='./output', help='Output directory')
     parser.add_argument('--tag', type=str, default='', help='Tag for the experiment')
-    parser.add_argument('--eval', action='store_true', help='Enable evaluation mode')
 
     return parser
+
+
+def model_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    get all arguments for models.
+    :param parser:
+    :return:
+    """
+    parser = arguments_model(parser=parser)
+
+    return parser
+
+
+# TODO: there may be a better way to organize args for different use cases
+def get_train_args() -> argparse.Namespace:
+    parser = base_args()
+    parser = model_args(parser=parser)
+
+    # Add training specific arguments
+    parser.add_argument('--epochs', type=int, default=50, help='Number of training epochs')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for optimizer')
+    parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for SGD optimizer')
+    parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay for optimizer')
+    parser.add_argument('--lr_step_size', type=int, default=30, help='Step size for learning rate scheduler')
+    parser.add_argument('--lr_gamma', type=float, default=0.1, help='Gamma for learning rate scheduler')
+
+    args = parser.parse_args()
+    args = load_config_file(args)
+
+    return args

@@ -22,15 +22,15 @@ class YOLOv5Neck(BaseNeck):
     def __init__(
             self,
             opts: argparse.Namespace,
-            in_channels_list: List[int],
-            depth_multiple: float = 1,
     ) -> None:
         super().__init__(opts)
 
+        in_channels_list = getattr(opts, 'model.neck.yolov5_neck.in_channels', None)
         assert len(in_channels_list) == 3, f"the length of input channel list must be 3, but got {len(in_channels_list)}"
         self.in_channels_list = in_channels_list
         c3_in, c4_in, c5_in = in_channels_list
 
+        depth_multiple = getattr(opts, 'model.neck.yolov5_neck.depth_multiple', 1.0)
         num_c3_blocks = max(round(3 * depth_multiple), 1)
 
         # --- FPN ---
@@ -117,15 +117,15 @@ class YOLOv5Neck(BaseNeck):
         """Add model-specific arguments"""
 
         group = parser.add_argument_group(title=cls.__name__)
-        group.parser.add_argument(
-            '--model.neck.yolov5.in_channels_list',
+        group.add_argument(
+            '--model.neck.yolov5_neck.in_channels',
             nargs='+',
             type=int,
             default=(),
             help='Define in_channels sizes as a flat list.'
         )
-        parser.add_argument(
-            '--model.neck.yolov5.depth_multiple',
+        group.add_argument(
+            '--model.neck.yolov5_neck.depth_multiple',
             type=float,
             default=1.0,
             help='The depth multiple of the YOLOv5.'

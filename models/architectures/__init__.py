@@ -16,12 +16,13 @@ ARCHITECTURES_REGISTRY = Registry(
 )
 
 
-def build_architecture(architecture_name: str, args: Dict[str, Any]) -> nn.Module:
+def build_architecture(opts: argparse.Namespace) -> nn.Module:
     """
     Build an architecture.
     """
+    architecture_name = getattr(opts, "model.architecture.name", "yolo")
     create_fn = ARCHITECTURES_REGISTRY.get(architecture_name)
-    architecture = create_fn(**args)
+    architecture = create_fn(opts)
     return architecture
 
 

@@ -26,46 +26,11 @@ class YOLO(BaseArchitecture):
     ) -> None:
         super().__init__(opts)
 
-        backbone = getattr(opts, "model.architecture.yolo.backbone", None)
-        neck = getattr(opts, "model.architecture.yolo.neck", None)
-        head = getattr(opts, "model.architecture.yolo.head", None)
-
-        if backbone is None:
-            logger.warning("Backbone is not provided, use the Yolo version 5 as default."
-                           "If you do not want to use yolov5, please provide your own "
-                           "model base on yolo architecture.")
-            self.backbone = build_backbone(
-                backbone_name="csp_darknet53",
-                args={
-                    "width_multiple": 1.0,
-                    "depth_multiple": 1.0,
-                    "out_index": [2, 3, 4]
-                }
-            )
-            self.neck = build_neck(
-                neck_name="yolov5_neck",
-                args={
-                    "in_channels_list": [256, 512, 1024],
-                    "depth_multiple": 1.0
-                }
-            )
-            self.head = build_head(
-                head_name="yolov5_head",
-                args={
-                    "num_classes": 80,
-                    "anchors": [
-                        [10, 13, 16, 30, 33, 23],
-                        [30, 61, 62, 45, 59, 119],
-                        [116, 90, 156, 198, 373, 326],
-                    ],
-                    "in_channels": [256, 512, 1024],
-                }
-            )
-            self.head.set_strides_anchors(self.backbone.get_strides())
-        else:
-            self.backbone = backbone
-            self.neck = neck
-            self.head = head
+        self.backbone = build_backbone(opts=opts)
+        self.neck = build_neck(opts=opts)
+        self.head = build_head(opts=opts)
+        # TODO: the code have a problem, need to be fixed
+        self.head.set_strides_anchors(self.backbone.get_strides())
 
         self.info()
         self.show_model_info()
@@ -135,7 +100,7 @@ class YOLO(BaseArchitecture):
                 input_virtual=head_inputs,
             )
             print_data(
-                title=f"Head: {self.neck.__class__.__name__}",
+                title=f"Head: {self.head.__class__.__name__}",
                 data={
                     'param': head_param,
                     'macs': head_macs,
@@ -193,9 +158,6 @@ class YOLO(BaseArchitecture):
         """Add model-specific arguments"""
 
         group = parser.add_argument_group(title=cls.__name__)
-        group.add_argument("--model.architecture.yolo.backbone", type=str, default=None, help="Backbone of the model")
-        group.add_argument("--model.architecture.yolo.neck", type=str, default=None, help="Neck of the model")
-        group.add_argument("--model.architecture.yolo.head", type=str, default=None, help="Head of the model")
 
         return parser
 

@@ -10,6 +10,7 @@ import os
 
 import yaml
 
+from data.datasets import arguments_datasets
 from models import arguments_model
 
 from utils.ddp_utils import is_master
@@ -202,12 +203,29 @@ def common_args():
     return parser
 
 
+def cudnn_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    get all arguments for cudnn.
+    :param parser:
+    :return:
+    """
+    group = parser.add_argument_group(title='Arguments for cudnn.')
+
+    # Add cudnn specific arguments
+    group.add_argument('--cudnn.deterministic', type=bool, default=True, help='Whether to set cudnn.deterministic to True')
+    group.add_argument('--cudnn.benchmark', type=bool, default=False, help='Whether to set cudnn.benchmark to True')
+
+    return parser
+
+
 def data_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     get all arguments for data.
     :param parser:
     :return:
     """
+    parser = arguments_datasets(parser=parser)
+
     group = parser.add_argument_group(title='Arguments for dataset.')
 
     # Add data specific arguments
@@ -217,7 +235,6 @@ def data_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     group.add_argument('--data.shuffle', type=bool, default=True, help='Whether to shuffle the data')
     group.add_argument('--drop_last', type=bool, default=True, help='Whether to drop the last incomplete batch')
     group.add_argument('--data.dataset_name', type=str, default=None, help='Dataset name')
-
 
     return parser
 
@@ -248,6 +265,9 @@ def model_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 def get_train_args() -> argparse.Namespace:
     parser = common_args()
+    parser = cudnn_args(parser=parser)
+    parser = data_args(parser=parser)
+    parser = transform_args(parser=parser)
     parser = model_args(parser=parser)
 
     # Add training specific arguments

@@ -3,18 +3,20 @@ For licensing see accompanying LICENSE file.
 Writen by: ian
 """
 import argparse
+from typing import Tuple
+
 from torch.utils.data import DataLoader
 
 from data.datasets import build_dataset
 
 
-def build_dataloader(opts: argparse.Namespace) -> DataLoader:
+def build_dataloader(opts: argparse.Namespace) -> Tuple[DataLoader, DataLoader]:
     """
     Build a dataloader.
     :param opts:
     :return:
     """
-    train_dataset = build_dataset(opts)
+    train_dataset = build_dataset(opts, is_training=True, transform=None)
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=getattr(opts, 'data.train_batch_size', 1),
@@ -23,7 +25,7 @@ def build_dataloader(opts: argparse.Namespace) -> DataLoader:
         drop_last=getattr(opts, 'data.drop_last', False),
     )
 
-    val_dataset = build_dataset(opts)
+    val_dataset = build_dataset(opts, is_training=False, transform=None)
     val_dataloader = DataLoader(
         val_dataset,
         batch_size=getattr(opts, 'data.val_batch_size', 1),
@@ -32,4 +34,4 @@ def build_dataloader(opts: argparse.Namespace) -> DataLoader:
         drop_last=False,
     )
 
-    return train_dataloader
+    return train_dataloader, val_dataloader

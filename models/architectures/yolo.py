@@ -32,6 +32,7 @@ class YOLO(BaseArchitecture):
         # TODO: the code have a problem, need to be fixed
         self.head.set_strides_anchors(self.backbone.get_strides())
 
+        self.to(self.device)
         self.info()
         self.show_model_info()
 

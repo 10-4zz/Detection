@@ -41,6 +41,7 @@ class YoloDataset(Dataset):
             self,
             opts: argparse.Namespace,
             is_training: bool = True,
+            is_test: bool = False,
             transform=None
     ) -> None:
         """
@@ -62,7 +63,7 @@ class YoloDataset(Dataset):
         self.class_names = self._load_class_names()
         self.catid2clsid = {i: i for i, name in enumerate(self.class_names)}
 
-        cache_path = os.path.join(label_dir, f"{os.path.basename(label_dir)}.cache")
+        cache_path = os.path.join(root_dir, "labels", f"{os.path.basename(label_dir)}.cache")
 
         if os.path.exists(cache_path):
             logger.info(f"Attempting to load dataset from cache: {cache_path}")
@@ -203,9 +204,9 @@ class YoloDataset(Dataset):
             Input argparse.Namespace instance with additional arguments.
         """
         group = parser.add_argument_group(title=cls.__name__)
-        group.add_argument('--data.yolo.root_dir', type=str, required=True,
+        group.add_argument('--data.yolo.root_dir', type=str, default=None,
                            help='Path to the directory containing images.')
-        group.add_argument('--data.yolo.class_names_file', type=str, required=True,
+        group.add_argument('--data.yolo.class_names_file', type=str, default=None,
                            help='Path to the file with class names, one per line.')
 
         return parser

@@ -22,6 +22,8 @@ class CocoDataset(Dataset):
     def __init__(
             self,
             opts: argparse.Namespace,
+            is_training: bool = True,
+            is_test: bool = False,
             transform=None
     ) -> None:
         """
@@ -29,11 +31,13 @@ class CocoDataset(Dataset):
             transform (callable, optional): A function/transform to be applied on a sample.
         """
 
-        image_dir = getattr(opts, 'data.coco.image_dir', None)
-        ann_file = getattr(opts, 'data.coco.ann_file', None)
+        root_dir = getattr(opts, 'data.coco.root_dir', None)
 
-        self.image_dir = image_dir
-        self.ann_file = ann_file
+        image_dir = "train2017" if is_training else "val2017"
+        ann_file = "instances_train2017.json" if is_training else "instances_val2017.json"
+
+        self.image_dir = os.path.join(root_dir, "images", image_dir)
+        self.ann_file = os.path.join(root_dir, "annotations", ann_file)
         self.transform = transform
 
         self.coco = COCO(self.ann_file)
@@ -103,10 +107,8 @@ class CocoDataset(Dataset):
             Input argparse.Namespace instance with additional arguments.
         """
         group = parser.add_argument_group(title=cls.__name__)
-        group.add_argument('--data.coco.image_dir', type=str, required=True,
+        group.add_argument('--data.coco.root_dir', type=str, default=None,
                            help='Path to the directory containing images.')
-        group.add_argument('--data.coco.ann_file', type=str, required=True,
-                           help='Path to the directory containing annotations.')
 
         return parser
 

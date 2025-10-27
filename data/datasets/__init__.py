@@ -17,13 +17,17 @@ DATASETS_REGISTRY = Registry(
 )
 
 
-def build_dataset(opts: argparse.Namespace) -> Dataset:
+def build_dataset(
+        opts: argparse.Namespace,
+        is_training: bool = True,
+        transform=None,
+) -> Dataset:
     """
     Build a dataset.
     """
     dataset_name = getattr(opts, "data.dataset_name", None)
     create_fn = DATASETS_REGISTRY.get(dataset_name)
-    dataset = create_fn(opts)
+    dataset = create_fn(opts, is_training, transform)
     return dataset
 
 
@@ -33,6 +37,6 @@ def arguments_datasets(parser):
     :param parser:
     :return:
     """
-    DATASETS_REGISTRY.all_arguments(parser=parser)
+    parser = DATASETS_REGISTRY.all_arguments(parser=parser)
     return parser
 

@@ -15,7 +15,7 @@ class Base(nn.Module):
     ) -> None:
         super().__init__()
 
-        device = getattr(opts, "device", None)
+        device = getattr(opts, "common.device", None)
         self.device = device if device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.input_size = getattr(opts, "model.input_size", 640)
         self.opts = opts

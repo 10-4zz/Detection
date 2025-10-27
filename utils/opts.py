@@ -103,90 +103,90 @@ def load_config_file(opts):
     return opts
 
 
-def extend_selected_args_with_prefix(
-    parser: argparse.ArgumentParser, match_prefix: str, additional_prefix: str
-) -> argparse.ArgumentParser:
-    """
-    Helper function to select arguments with certain prefix and duplicate them with a replaced prefix.
-    An example use case is distillation, where we want to add --teacher.model.* as a prefix to all --model.* arguments.
-
-    In that case, we provide the following arguments:
-    * match_prefix="--model."
-    * additional_prefix="--teacher.model."
-
-    Args:
-        parser: The argument parser to extend.
-        match_prefix: Prefix to select arguments for duplication.
-            The value should start with "--", contain no underscores, and with ".".
-        additional_prefix: Prefix to replace the @match_prefix in duplicated arguments.
-            The value should start with "--", contain no underscores, and with ".".
-    """
-    # all arguments are stored as actions
-    options = parser._actions
-
-    regexp = r"--[^_]+\."
-    assert re.match(
-        regexp, match_prefix
-    ), f"match prefix '{match_prefix}' should match regexp '{regexp}'"
-    assert re.match(
-        regexp, additional_prefix
-    ), f"additional prefix '{additional_prefix}' should match regexp '{regexp}'"
-
-    for option in options:
-        option_strings = option.option_strings
-        # option strings are stored as a list
-        for option_string in option_strings:
-            if option_string.startswith(match_prefix):
-                parser.add_argument(
-                    option_string.replace(match_prefix, additional_prefix),
-                    nargs="?"
-                    if isinstance(option, argparse._StoreTrueAction)
-                    else option.nargs,
-                    const=option.const,
-                    default=option.default,
-                    type=option.type,
-                    choices=option.choices,
-                    help=option.help,
-                    metavar=option.metavar,
-                )
-    return parser
-
-
-def extract_opts_with_prefix_replacement(
-    opts: argparse.Namespace,
-    match_prefix: str,
-    replacement_prefix: str,
-) -> argparse.Namespace:
-    """
-    Helper function to extract a copy options with certain prefix and return them with an alternative prefix.
-    An example usage is distillation, when we have used @extend_selected_args_with_prefix to add --teacher.model.*
-        arguments to argparser, and now we want to re-use the handlers of model.* opts by teacher.model.* opts
-
-    Args:
-        opts: The argument parser to extend.
-        match_prefix: Prefix to select opts for extraction.
-            The value should not contain dashes and should end with "."
-        replacement_prefix: Prefix to replace the @match_prefix
-            The value should not contain dashes and should end with "."
-    """
-    regexp = r"[^-]+\."
-    assert re.match(
-        regexp, match_prefix
-    ), f"match prefix '{match_prefix}' should match regexp '{regexp}'"
-    assert re.match(
-        regexp, replacement_prefix
-    ), f"replacement prefix '{replacement_prefix}' should match regexp '{regexp}'"
-
-    opts_dict = vars(opts)
-    result_dict = {
-        # replace teacher with empty string in "teacher.model.*" to get model.*
-        key.replace(match_prefix, replacement_prefix): value
-        for key, value in opts_dict.items()
-        # filter keys related to teacher
-        if key.startswith(match_prefix)
-    }
-
-    return argparse.Namespace(**result_dict)
+# def extend_selected_args_with_prefix(
+#     parser: argparse.ArgumentParser, match_prefix: str, additional_prefix: str
+# ) -> argparse.ArgumentParser:
+#     """
+#     Helper function to select arguments with certain prefix and duplicate them with a replaced prefix.
+#     An example use case is distillation, where we want to add --teacher.model.* as a prefix to all --model.* arguments.
+#
+#     In that case, we provide the following arguments:
+#     * match_prefix="--model."
+#     * additional_prefix="--teacher.model."
+#
+#     Args:
+#         parser: The argument parser to extend.
+#         match_prefix: Prefix to select arguments for duplication.
+#             The value should start with "--", contain no underscores, and with ".".
+#         additional_prefix: Prefix to replace the @match_prefix in duplicated arguments.
+#             The value should start with "--", contain no underscores, and with ".".
+#     """
+#     # all arguments are stored as actions
+#     options = parser._actions
+#
+#     regexp = r"--[^_]+\."
+#     assert re.match(
+#         regexp, match_prefix
+#     ), f"match prefix '{match_prefix}' should match regexp '{regexp}'"
+#     assert re.match(
+#         regexp, additional_prefix
+#     ), f"additional prefix '{additional_prefix}' should match regexp '{regexp}'"
+#
+#     for option in options:
+#         option_strings = option.option_strings
+#         # option strings are stored as a list
+#         for option_string in option_strings:
+#             if option_string.startswith(match_prefix):
+#                 parser.add_argument(
+#                     option_string.replace(match_prefix, additional_prefix),
+#                     nargs="?"
+#                     if isinstance(option, argparse._StoreTrueAction)
+#                     else option.nargs,
+#                     const=option.const,
+#                     default=option.default,
+#                     type=option.type,
+#                     choices=option.choices,
+#                     help=option.help,
+#                     metavar=option.metavar,
+#                 )
+#     return parser
+#
+#
+# def extract_opts_with_prefix_replacement(
+#     opts: argparse.Namespace,
+#     match_prefix: str,
+#     replacement_prefix: str,
+# ) -> argparse.Namespace:
+#     """
+#     Helper function to extract a copy options with certain prefix and return them with an alternative prefix.
+#     An example usage is distillation, when we have used @extend_selected_args_with_prefix to add --teacher.model.*
+#         arguments to argparser, and now we want to re-use the handlers of model.* opts by teacher.model.* opts
+#
+#     Args:
+#         opts: The argument parser to extend.
+#         match_prefix: Prefix to select opts for extraction.
+#             The value should not contain dashes and should end with "."
+#         replacement_prefix: Prefix to replace the @match_prefix
+#             The value should not contain dashes and should end with "."
+#     """
+#     regexp = r"[^-]+\."
+#     assert re.match(
+#         regexp, match_prefix
+#     ), f"match prefix '{match_prefix}' should match regexp '{regexp}'"
+#     assert re.match(
+#         regexp, replacement_prefix
+#     ), f"replacement prefix '{replacement_prefix}' should match regexp '{regexp}'"
+#
+#     opts_dict = vars(opts)
+#     result_dict = {
+#         # replace teacher with empty string in "teacher.model.*" to get model.*
+#         key.replace(match_prefix, replacement_prefix): value
+#         for key, value in opts_dict.items()
+#         # filter keys related to teacher
+#         if key.startswith(match_prefix)
+#     }
+#
+#     return argparse.Namespace(**result_dict)
 
 
 def common_args():
@@ -207,11 +207,30 @@ def data_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     get all arguments for data.
     :param parser:
     :return:
-    """    # Add data specific arguments
-    parser.add_argument('--data.dataset_path', type=str, default='./data', help='Path to dataset')
-    parser.add_argument('--data.num_workers', type=int, default=4, help='Number of data loading workers')
-    parser.add_argument('--data.batch_size', type=int, default=16, help='Batch size for training')
-    parser.add_argument('--data.image_size', type=int, default=640, help='Path to dataset')
+    """
+    group = parser.add_argument_group(title='Arguments for dataset.')
+
+    # Add data specific arguments
+    group.add_argument('--data.num_workers', type=int, default=4, help='Number of data loading workers')
+    group.add_argument('--data.train_batch_size', type=int, default=16, help='Batch size for training.')
+    group.add_argument('--data.val_batch_size', type=int, default=16, help='Batch size for validation.')
+    group.add_argument('--data.shuffle', type=bool, default=True, help='Whether to shuffle the data')
+    group.add_argument('--drop_last', type=bool, default=True, help='Whether to drop the last incomplete batch')
+    group.add_argument('--data.dataset_name', type=str, default=None, help='Dataset name')
+
+
+    return parser
+
+
+def transform_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    get all arguments for transform.
+    :param parser:
+    :return:
+    """
+    group = parser.add_argument_group(title='Arguments for transform')
+
+    group.add_argument('--data.image_size', type=int, default=640, help='Path to dataset')
 
     return parser
 
@@ -227,18 +246,17 @@ def model_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-# TODO: there may be a better way to organize args for different use cases
 def get_train_args() -> argparse.Namespace:
     parser = common_args()
     parser = model_args(parser=parser)
 
     # Add training specific arguments
-    parser.add_argument('--epochs', type=int, default=50, help='Number of training epochs')
-    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for optimizer')
-    parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for SGD optimizer')
-    parser.add_argument('--weight_decay', type=float, default=1e-4, help='Weight decay for optimizer')
-    parser.add_argument('--lr_step_size', type=int, default=30, help='Step size for learning rate scheduler')
-    parser.add_argument('--lr_gamma', type=float, default=0.1, help='Gamma for learning rate scheduler')
+    parser.add_argument('--common.epochs', type=int, default=50, help='Number of training epochs')
+    parser.add_argument('--common.learning_rate', type=float, default=0.001, help='Learning rate for optimizer')
+    parser.add_argument('--common.momentum', type=float, default=0.9, help='Momentum for SGD optimizer')
+    parser.add_argument('--common.weight_decay', type=float, default=1e-4, help='Weight decay for optimizer')
+    parser.add_argument('--common.lr_step_size', type=int, default=30, help='Step size for learning rate scheduler')
+    parser.add_argument('--common.lr_gamma', type=float, default=0.1, help='Gamma for learning rate scheduler')
 
     args = parser.parse_args()
     args = load_config_file(args)

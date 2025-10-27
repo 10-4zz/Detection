@@ -2,7 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
-from typing import Dict, Any
+import argparse
 
 from torch.utils.data import Dataset
 
@@ -17,11 +17,22 @@ DATASETS_REGISTRY = Registry(
 )
 
 
-def build_dataset(dataset_name: str, args: Dict[str, Any]) -> Dataset:
+def build_dataset(opts: argparse.Namespace) -> Dataset:
     """
     Build a dataset.
     """
+    dataset_name = getattr(opts, "data.dataset_name", None)
     create_fn = DATASETS_REGISTRY.get(dataset_name)
-    dataset = create_fn(**args)
+    dataset = create_fn(opts)
     return dataset
+
+
+def arguments_datasets(parser):
+    """
+    Get all arguments for datasets.
+    :param parser:
+    :return:
+    """
+    DATASETS_REGISTRY.all_arguments(parser=parser)
+    return parser
 

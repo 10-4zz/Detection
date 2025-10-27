@@ -2,27 +2,36 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 import os
 import torch
 from torch.utils.data import Dataset
 from PIL import Image
 from pycocotools.coco import COCO
 
+from data.datasets import DATASETS_REGISTRY
 from utils.logger import logger
 
 
+@DATASETS_REGISTRY.register(component_name='coco')
 class CocoDataset(Dataset):
     """
     A standard PyTorch Dataset class for loading a COCO formatted dataset.
     """
 
-    def __init__(self, image_dir: str, ann_file: str, transform=None):
+    def __init__(
+            self,
+            opts: argparse.Namespace,
+            transform=None
+    ) -> None:
         """
         Args:
-            image_dir (str): Path to the directory containing all images (e.g., 'train2017').
-            ann_file (str): Path to the COCO format annotation .json file.
             transform (callable, optional): A function/transform to be applied on a sample.
         """
+
+        image_dir = getattr(opts, 'data.coco.image_dir', None)
+        ann_file = getattr(opts, 'data.coco.ann_file', None)
+
         self.image_dir = image_dir
         self.ann_file = ann_file
         self.transform = transform
@@ -81,4 +90,23 @@ class CocoDataset(Dataset):
             image, target = self.transform(image, target)
 
         return image, target
+
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+        """
+        Adds dataset related arguments to the parser.
+
+        Args:
+            parser: An argparse.Namespace instance
+
+        Returns:
+            Input argparse.Namespace instance with additional arguments.
+        """
+        group = parser.add_argument_group(title=cls.__name__)
+        group.add_argument('--data.coco.image_dir', type=str, required=True,
+                           help='Path to the directory containing images.')
+        group.add_argument('--data.coco.ann_file', type=str, required=True,
+                           help='Path to the directory containing annotations.')
+
+        return parser
 

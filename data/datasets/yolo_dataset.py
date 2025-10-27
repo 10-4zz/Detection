@@ -2,6 +2,7 @@
 For licensing see accompanying LICENSE file.
 Writen by: ian
 """
+import argparse
 import os
 import hashlib
 import pickle
@@ -27,7 +28,7 @@ class CocoInMemory(COCO):
             self.createIndex()
 
 
-@DATASETS_REGISTRY.register(component_name='yolo_dataset')
+@DATASETS_REGISTRY.register(component_name='yolo')
 class YoloDataset(Dataset):
     """
     A PyTorch Dataset that reads a YOLO-formatted dataset, converts it to COCO format
@@ -36,17 +37,26 @@ class YoloDataset(Dataset):
     """
     CACHE_VERSION = 1.0  # Change this version if you update the caching logic
 
-    def __init__(self, image_dir, label_dir, class_names_file, transform=None):
+    def __init__(
+            self,
+            opts: argparse.Namespace,
+            is_training: bool = True,
+            transform=None
+    ) -> None:
         """
         Args:
-            image_dir (str): Path to the directory containing images.
-            label_dir (str): Path to the directory containing YOLO .txt labels.
-            class_names_file (str): Path to the file with class names, one per line.
+            opts (argparse.Namespace): The all argument.
             transform (callable, optional): Optional transform to be applied on a sample.
         """
+        root_dir = getattr(opts, 'data.yolo.root_dir', None)
+        set_type = 'train' if is_training else 'val'
+        image_dir = os.path.join(root_dir, 'images', set_type)
+        label_dir = os.path.join(root_dir, 'labels', set_type)
+        class_names_file = getattr(opts, 'data.yolo.class_names_file', None)
+        class_names_file_dir = os.path.join(root_dir, class_names_file)
         self.image_dir = image_dir
         self.label_dir = label_dir
-        self.class_names_file = class_names_file
+        self.class_names_file_dir = class_names_file_dir
         self.transform = transform
 
         self.class_names = self._load_class_names()
@@ -75,11 +85,11 @@ class YoloDataset(Dataset):
         logger.info("COCO API object for evaluation created successfully in memory.")
 
     def _load_class_names(self):
-        with open(self.class_names_file, 'r') as f:
+        with open(self.class_names_file_dir, 'r') as f:
             return [line.strip() for line in f.readlines()]
 
     def _get_hash(self):
-        files = [self.class_names_file] + sorted(os.listdir(self.label_dir))
+        files = [self.class_names_file_dir] + sorted(os.listdir(self.label_dir))
         content = "".join(files).encode('utf-8')
         return hashlib.sha256(content).hexdigest()
 
@@ -180,5 +190,24 @@ class YoloDataset(Dataset):
             sample = self.transform(sample)
 
         return sample
+
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+        """
+        Adds dataset related arguments to the parser.
+
+        Args:
+            parser: An argparse.Namespace instance
+
+        Returns:
+            Input argparse.Namespace instance with additional arguments.
+        """
+        group = parser.add_argument_group(title=cls.__name__)
+        group.add_argument('--data.yolo.root_dir', type=str, required=True,
+                           help='Path to the directory containing images.')
+        group.add_argument('--data.yolo.class_names_file', type=str, required=True,
+                           help='Path to the file with class names, one per line.')
+
+        return parser
 
 
